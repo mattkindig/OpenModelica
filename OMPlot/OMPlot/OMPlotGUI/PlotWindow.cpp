@@ -29,7 +29,6 @@
  *
  */
 
-#include <iostream>
 #include <memory>
 
 #include "PlotWindow.h"
