@@ -30,15 +30,14 @@
  */
 
 #include "PlotCurve.h"
-#include "OMPlot.h"
-
+#if QWT_VERSION < 0x060000
+#include "qwt_legend_item.h"
+#else
+#include "qwt_painter.h"
+#endif
 #include "qwt_symbol.h"
-#include "qwt_text.h"
 #include "qwt_scale_map.h"
-#include "qwt_math.h"
-
-#include <QtMath>
-#include <QStringBuilder>
+#include "qwt_point_polar.h"
 
 using namespace OMPlot;
 
@@ -59,6 +58,7 @@ PlotCurve::PlotCurve(const QString &fileName, const QString &absoluteFilePath, c
   setYDisplayUnit(yDisplayUnit);
   mCustomTitle = "";
   setToggleSign(false);
+  setYAxisRight(false);  // default to left y-axis
   setTitleLocal();
   /* set curve width and style */
   setCurveWidth(mpParentPlot->getParentPlotWindow()->getCurveWidth());
@@ -79,13 +79,13 @@ void PlotCurve::setTitleLocal()
   if (mCustomTitle.isEmpty()) {
     QString titleStr = getYVariable();
     if (!getYDisplayUnit().isEmpty() || !getYUnitPrefix().isEmpty()) {
-      titleStr += QString(" (%1)").arg(Plot::convertUnitToSymbol(getYUnitPrefix() % getYDisplayUnit()));
+      titleStr += QString(" (%1%2)").arg(getYUnitPrefix(), getYDisplayUnit());
     }
 
     if (mpParentPlot->getParentPlotWindow()->isPlotParametric() || mpParentPlot->getParentPlotWindow()->isPlotArrayParametric()) {
       QString xVariable = getXVariable();
       if (!getXDisplayUnit().isEmpty() || !getXUnitPrefix().isEmpty()) {
-        xVariable += QString(" (%1)").arg(Plot::convertUnitToSymbol(getXUnitPrefix() % getXDisplayUnit()));
+        xVariable += QString(" (%1%2)").arg(getXUnitPrefix(), getXDisplayUnit());
       }
       if (!xVariable.isEmpty()) {
         titleStr += QString(" <b>vs</b> %1").arg(xVariable);
@@ -94,6 +94,10 @@ void PlotCurve::setTitleLocal()
     // Add - sign if curve is toggled
     if (getToggleSign()) {
       titleStr.prepend(QString("-"));
+    }
+    // Add * if curve is plotted on right axis
+    if (isYAxisRight()) {
+       titleStr.append(QString("*"));
     }
     setTitle(titleStr);
     // visibility
@@ -253,13 +257,22 @@ void PlotCurve::toggleVisibility(bool visibility)
 }
 
 /*!
- * \brief PlotCurve::resetPrefixUnit
- * Resets the unit prefix and exponent.
- * \param resetValues - reset the values.
- */
-void PlotCurve::resetPrefixUnit(bool resetValues)
+ * \brief PlotCurve::setYAxisRight
+ * Assigns the curve to the right or left y-axis
+*/
+void PlotCurve::setYAxisRight(bool right)
 {
-  if (!mXUnitPrefix.isEmpty() && resetValues) {
+    auto axis = right ? QwtPlot::yRight : QwtPlot::yLeft;
+    QwtPlotCurve::setYAxis(axis);
+}
+
+/*!
+ * \brief PlotCurve::resetPrefixUnit
+ * Resets the unit prefix.
+ */
+void PlotCurve::resetPrefixUnit()
+{
+  if (!mXUnitPrefix.isEmpty()) {
     for (int i = 0 ; i < mXAxisVector.size() ; i++) {
       updateXAxisValue(i, mXAxisVector.at(i) * qPow(10, mXExponent));
     }
@@ -267,7 +280,7 @@ void PlotCurve::resetPrefixUnit(bool resetValues)
   mXUnitPrefix = "";
   mXExponent = 0;
 
-  if (!mYUnitPrefix.isEmpty() && resetValues) {
+  if (!mYUnitPrefix.isEmpty()) {
     for (int i = 0 ; i < mYAxisVector.size() ; i++) {
       updateYAxisValue(i, mYAxisVector.at(i) * qPow(10, mYExponent));
     }
@@ -332,7 +345,7 @@ void PlotCurve::plotData(bool toggleSign)
       }
     } else {
       // revert the values when there is no perfixUnits.
-      resetPrefixUnit(true);
+      resetPrefixUnit();
     }
   }
   setSamples(mXAxisVector, mYAxisVector);

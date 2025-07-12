@@ -32,10 +32,8 @@
 #ifndef PLOTCURVE_H
 #define PLOTCURVE_H
 
-#include "PlotWindow.h"
-
-#include "qwt_plot_directpainter.h"
-#include "qwt_plot_marker.h"
+#include "OMPlot.h"
+#include <qwt_plot_directpainter.h>
 
 namespace OMPlot
 {
@@ -99,6 +97,8 @@ public:
   void addYAxisValue(double value);
   void updateYAxisValue(int index, double value);
   void clearYAxisVector() {mYAxisVector.clear();}
+  void setYAxisRight(bool right);
+  bool isYAxisRight() const {return QwtPlotCurve::yAxis() == QwtPlot::yRight;}
   int getXAxisSize() const;
   int getYAxisSize() const;
   void setFileName(QString fileName);
@@ -113,7 +113,7 @@ public:
   void setCustomColor(bool value);
   bool hasCustomColor();
   void toggleVisibility(bool visibility);
-  void resetPrefixUnit(bool resetValues);
+  void resetPrefixUnit();
   void plotData(bool toggleSign = false);
   QwtPlotDirectPainter* getPlotDirectPainter() {return mpPlotDirectPainter;}
   QwtPlotMarker* getPointMarker() const {return mpPointMarker;}

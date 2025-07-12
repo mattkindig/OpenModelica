@@ -38,6 +38,7 @@
 #ifndef PLOTWINDOW_H
 #define PLOTWINDOW_H
 
+#include <QtGlobal>
 #include <QMainWindow>
 #include <QCheckBox>
 #include <QComboBox>
@@ -54,9 +55,18 @@
 #include <QTextStream>
 #include <QDialogButtonBox>
 
-#include "qwt_series_data.h"
-#include "qwt_scale_draw.h"
-#include "qwt_plot_curve.h"
+#include <qwt_plot.h>
+#include <qwt_text.h>
+#include <qwt_plot_curve.h>
+#include <qwt_plot_picker.h>
+#include <qwt_scale_draw.h>
+#include <qwt_picker_machine.h>
+#include <qwt_plot_grid.h>
+#include <qwt_curve_fitter.h>
+#include <qwt_legend.h>
+#include <qwt_plot_zoomer.h>
+#include <qwt_plot_panner.h>
+#include <qwt_scale_engine.h>
 #if QWT_VERSION >= 0x060000
 #if QWT_VERSION < 0x060200
 #include <qwt_compat.h>
@@ -64,6 +74,10 @@
 #define QwtArray QVector
 #endif
 #endif
+#include <stdexcept>
+#include "util/read_matlab4.h"
+#include "util/read_csv.h"
+#include "OMPlot.h"
 
 namespace OMPlot
 {
@@ -99,11 +113,15 @@ private:
   QString mXDisplayUnit;
   QString mYUnit;
   QString mYDisplayUnit;
+  QString mYRightUnit;
+  QString mYRightDisplayUnit;
   QString mTimeUnit;
   QString mXRangeMin;
   QString mXRangeMax;
   QString mYRangeMin;
   QString mYRangeMax;
+  QString mYRightRangeMin;
+  QString mYRightRangeMax;
   double mCurveWidth;
   int mCurveStyle;
   QFont mLegendFont;
@@ -172,6 +190,10 @@ public:
   QString getYUnit() {return mYUnit;}
   void setYDisplayUnit(QString yDisplayUnit) {mYDisplayUnit = yDisplayUnit;}
   QString getYDisplayUnit() {return mYDisplayUnit;}
+  void setYRightUnit(QString yUnit) { mYRightUnit = yUnit; }
+  QString getYRightUnit() { return mYRightUnit; }
+  void setYRightDisplayUnit(QString yDisplayUnit) { mYRightDisplayUnit = yDisplayUnit; }
+  QString getYRightDisplayUnit() { return mYRightDisplayUnit; }
   void setTimeUnit(QString timeUnit) {mTimeUnit = timeUnit;}
   QString getTimeUnit() {return mTimeUnit;}
   void setXRange(double min, double max);
@@ -180,6 +202,9 @@ public:
   void setYRange(double min, double max);
   QString getYRangeMin();
   QString getYRangeMax();
+  void setYRightRange(double min, double max);
+  QString getYRightRangeMin();
+  QString getYRightRangeMax();
   void setCurveWidth(double width);
   double getCurveWidth();
   void setCurveStyle(int style);
@@ -200,12 +225,10 @@ public:
   double getTime() {return mTime;}
   void updateTimeText();
   void updatePlot();
-  void emitPrefixUnitsChanged();
 private:
   void setInteractiveControls(bool enabled);
 signals:
   void closingDown();
-  void prefixUnitsChanged();
 private slots:
   void fitInView();
 public slots:
@@ -220,6 +243,7 @@ public slots:
   void setLogY(bool on);
   void setAutoScale(bool on);
   bool toggleSign(PlotCurve *pPlotCurve, bool checked);
+  void setYAxisRight(PlotCurve* pPlotCurve, bool right);
   void showSetupDialog();
   void showSetupDialog(QString variable);
   void interactiveSimulationStarted();
@@ -269,6 +293,7 @@ private:
   QDoubleSpinBox *mpThicknessSpinBox;
   QCheckBox *mpHideCheckBox;
   QCheckBox *mpToggleSignCheckBox;
+  QCheckBox *mpRightYAxisCheckBox;
 public:
   VariablePageWidget(PlotCurve *pPlotCurve, SetupDialog *pSetupDialog);
   void setCurvePickColorButtonIcon();
@@ -281,6 +306,7 @@ public:
   QDoubleSpinBox* getThicknessSpinBox() {return mpThicknessSpinBox;}
   QCheckBox* getHideCheckBox() {return mpHideCheckBox;}
   QCheckBox* getToggleSignCheckBox() const {return mpToggleSignCheckBox;}
+  QCheckBox* getYRightAxisCheckBox() const {return mpRightYAxisCheckBox;}
 public slots:
   void resetLabel();
   void pickColor();
@@ -338,7 +364,13 @@ private:
   QLineEdit *mpYMinimumTextBox;
   QLabel *mpYMaximumLabel;
   QLineEdit *mpYMaximumTextBox;
+  QGroupBox* mpYRightAxisGroupBox;
+  QLabel* mpYRightMinimumLabel;
+  QLineEdit* mpYRightMinimumTextBox;
+  QLabel* mpYRightMaximumLabel;
+  QLineEdit* mpYRightMaximumTextBox;
   QCheckBox *mpPrefixUnitsCheckbox;
+  bool mPrefixUnitsChanged = false;
   /* buttons */
   QPushButton *mpOkButton;
   QPushButton *mpApplyButton;
@@ -347,7 +379,7 @@ private:
 public:
   SetupDialog(PlotWindow *pPlotWindow);
   void selectVariable(QString variable);
-  void setupPlotCurve(VariablePageWidget *pVariablePageWidget, bool prefixUnitsChanged);
+  void setupPlotCurve(VariablePageWidget *pVariablePageWidget);
 public slots:
   void variableSelected(QListWidgetItem *current, QListWidgetItem *previous);
   void autoScaleChecked(bool checked);

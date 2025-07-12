@@ -33,12 +33,8 @@
  */
 
 #include "PlotPicker.h"
-#include "OMPlot.h"
-#include "PlotCurve.h"
-#include "PlotGrid.h"
-#include "ScaleDraw.h"
-
-#include "qwt_text.h"
+#include "qwt_symbol.h"
+#include "qwt_scale_map.h"
 
 #include <QToolTip>
 #include <QtMath>
@@ -109,7 +105,18 @@ PlotPicker::PlotPicker(QWidget *pCanvas, Plot *pPlot)
  */
 QList<PlotCurve*> PlotPicker::curvesAtPosition(const QPoint pos, QList<int> *indexes) const
 {
-  QPointF posF = invTransform(pos);
+  double xTrans =  mpPlot->canvasMap(QwtPlot::xBottom).invTransform(pos.x());
+  QPointF posL(xTrans, mpPlot->canvasMap(QwtPlot::yLeft).invTransform(pos.y()));
+  QPointF posR(xTrans, mpPlot->canvasMap(QwtPlot::yRight).invTransform(pos.y()));
+  // selection margin is equal to minor tick interval
+  auto calculateMargin = [](auto pPlot, auto axis) {  
+      auto interval = pPlot->axisInterval(axis);
+      int totalTicks = pPlot->axisMaxMajor(axis)*pPlot->axisMaxMinor(axis);
+      return (interval.maxValue() - interval.minValue()) / totalTicks;
+  };
+  const double xMargin      = calculateMargin(mpPlot, QwtPlot::xBottom);
+  const double yLeftMargin  = calculateMargin(mpPlot, QwtPlot::yLeft);
+  const double yRightMargin = calculateMargin(mpPlot, QwtPlot::yRight);
   int index = -1;
   QList<PlotCurve*> plotCurvesList;
   PlotCurve *pPlotCurve = 0;
@@ -121,6 +128,7 @@ QList<PlotCurve*> PlotPicker::curvesAtPosition(const QPoint pos, QList<int> *ind
       // find the closest point
       index = pPlotCurve->closestPoint(pos);
       if (index > -1) {
+        QPointF posF = pPlotCurve->isYAxisRight() ? posR : posL;
         int index1, previousIndex, nextIndex;
         if (index == 0) {
           index1 = 1;
@@ -144,25 +152,21 @@ QList<PlotCurve*> PlotPicker::curvesAtPosition(const QPoint pos, QList<int> *ind
             index1 = nextIndex;
           }
         }
-        QList<double> xMajorTicks = mpPlot->getPlotGrid()->xScaleDiv().ticks(QwtScaleDiv::MajorTick);
-        QList<double> yMajorTicks = mpPlot->getPlotGrid()->yScaleDiv().ticks(QwtScaleDiv::MajorTick);
-        if (xMajorTicks.size() > 1 && yMajorTicks.size() > 1) {
-          double x = (xMajorTicks[1] - xMajorTicks[0]) / mpPlot->axisMaxMinor(QwtPlot::xBottom);
-          double y = (yMajorTicks[1] - yMajorTicks[0]) / mpPlot->axisMaxMinor(QwtPlot::yLeft);
-          if (pPlotCurve->mXAxisVector.size() <= index || pPlotCurve->mYAxisVector.size() <= index
+        if (pPlotCurve->mXAxisVector.size() <= index || pPlotCurve->mYAxisVector.size() <= index
               || pPlotCurve->mXAxisVector.size() <= index1 || pPlotCurve->mYAxisVector.size() <= index1) {
             continue;
-          }
-          QPointF curvePointA(pPlotCurve->mXAxisVector.at(index), pPlotCurve->mYAxisVector.at(index));
-          QPointF curvePointB(pPlotCurve->mXAxisVector.at(index1), pPlotCurve->mYAxisVector.at(index1));
-          if (containsPoint(posF, curvePointA, curvePointB, x, y)) {
+        }
+        QPointF curvePointA(pPlotCurve->mXAxisVector.at(index), pPlotCurve->mYAxisVector.at(index));
+        QPointF curvePointB(pPlotCurve->mXAxisVector.at(index1), pPlotCurve->mYAxisVector.at(index1));
+        double yMargin = pPlotCurve->isYAxisRight() ? yRightMargin : yLeftMargin;
+        if (containsPoint(posF, curvePointA, curvePointB, xMargin, yMargin)) {
             plotCurvesList.append(pPlotCurve);
             indexes->append(index);
-          }
         }
       }
     }
   }
+
   return plotCurvesList;
 }
 
@@ -192,6 +196,7 @@ QwtText PlotPicker::trackerText(const QPoint &pos) const
       double x = pPlotCurve->mXAxisVector.at(index);
       double y = pPlotCurve->mYAxisVector.at(index);
 
+      pPlotCurve->getPointMarker()->setYAxis(pPlotCurve->yAxis());
       pPlotCurve->getPointMarker()->setValue(x, y);
       pPlotCurve->getPointMarker()->setVisible(true);
 
