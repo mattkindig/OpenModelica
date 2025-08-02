@@ -57,6 +57,7 @@ Plot::Plot(PlotWindow *pParent)
 {
   setAutoReplot(false);
   mpParentPlotWindow = pParent;
+  enableAxis(QwtPlot::yRight);
   // create an instance of legend
   mpLegend = new Legend(this);
   insertLegend(mpLegend, QwtPlot::TopLegend);
@@ -69,6 +70,7 @@ Plot::Plot(PlotWindow *pParent)
   LinearScaleEngine *pYLinearScaleEngine = new LinearScaleEngine;
   setAxisScaleEngine(QwtPlot::yLeft, pYLinearScaleEngine);
   setAxisAutoScale(QwtPlot::yLeft);
+  setAxisVisible(QwtPlot::yRight, false);
   // create the scale draw
   mpXScaleDraw = new ScaleDraw(true, this);
   setAxisScaleDraw(QwtPlot::xBottom, mpXScaleDraw);
