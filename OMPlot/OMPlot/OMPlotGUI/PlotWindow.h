@@ -99,11 +99,15 @@ private:
   QString mXDisplayUnit;
   QString mYUnit;
   QString mYDisplayUnit;
+  QString mYRightUnit;
+  QString mYRightDisplayUnit;
   QString mTimeUnit;
   QString mXRangeMin;
   QString mXRangeMax;
   QString mYRangeMin;
   QString mYRangeMax;
+  QString mYRightRangeMin;
+  QString mYRightRangeMax;
   double mCurveWidth;
   int mCurveStyle;
   QFont mLegendFont;
@@ -172,6 +176,10 @@ public:
   QString getYUnit() {return mYUnit;}
   void setYDisplayUnit(QString yDisplayUnit) {mYDisplayUnit = yDisplayUnit;}
   QString getYDisplayUnit() {return mYDisplayUnit;}
+  void setYRightUnit(QString yUnit) { mYRightUnit = yUnit; }
+  QString getYRightUnit() { return mYRightUnit; }
+  void setYRightDisplayUnit(QString yDisplayUnit) { mYRightDisplayUnit = yDisplayUnit; }
+  QString getYRightDisplayUnit() { return mYRightDisplayUnit; }
   void setTimeUnit(QString timeUnit) {mTimeUnit = timeUnit;}
   QString getTimeUnit() {return mTimeUnit;}
   void setXRange(double min, double max);
@@ -180,6 +188,9 @@ public:
   void setYRange(double min, double max);
   QString getYRangeMin();
   QString getYRangeMax();
+  void setYRightRange(double min, double max);
+  QString getYRightRangeMin();
+  QString getYRightRangeMax();
   void setCurveWidth(double width);
   double getCurveWidth();
   void setCurveStyle(int style);
@@ -220,6 +231,7 @@ public slots:
   void setLogY(bool on);
   void setAutoScale(bool on);
   bool toggleSign(PlotCurve *pPlotCurve, bool checked);
+  void setYAxisRight(PlotCurve* pPlotCurve, bool right);
   void showSetupDialog();
   void showSetupDialog(QString variable);
   void interactiveSimulationStarted();
@@ -269,6 +281,7 @@ private:
   QDoubleSpinBox *mpThicknessSpinBox;
   QCheckBox *mpHideCheckBox;
   QCheckBox *mpToggleSignCheckBox;
+  QCheckBox *mpRightYAxisCheckBox;
 public:
   VariablePageWidget(PlotCurve *pPlotCurve, SetupDialog *pSetupDialog);
   void setCurvePickColorButtonIcon();
@@ -281,6 +294,7 @@ public:
   QDoubleSpinBox* getThicknessSpinBox() {return mpThicknessSpinBox;}
   QCheckBox* getHideCheckBox() {return mpHideCheckBox;}
   QCheckBox* getToggleSignCheckBox() const {return mpToggleSignCheckBox;}
+  QCheckBox* getYRightAxisCheckBox() const {return mpRightYAxisCheckBox;}
 public slots:
   void resetLabel();
   void pickColor();
@@ -338,6 +352,11 @@ private:
   QLineEdit *mpYMinimumTextBox;
   QLabel *mpYMaximumLabel;
   QLineEdit *mpYMaximumTextBox;
+  QGroupBox* mpYRightAxisGroupBox;
+  QLabel* mpYRightMinimumLabel;
+  QLineEdit* mpYRightMinimumTextBox;
+  QLabel* mpYRightMaximumLabel;
+  QLineEdit* mpYRightMaximumTextBox;
   QCheckBox *mpPrefixUnitsCheckbox;
   /* buttons */
   QPushButton *mpOkButton;
