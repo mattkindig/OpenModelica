@@ -1505,6 +1505,25 @@ QString PlotWindow::getYRangeMax()
   return mYRangeMax;
 }
 
+void PlotWindow::setYRightRange(double min, double max)
+{
+    if (!(max == 0 && min == 0)) {
+        mpPlot->setAxisScale(QwtPlot::yRight, min, max);
+    }
+    mYRightRangeMin = QString::number(min);
+    mYRightRangeMax = QString::number(max);
+}
+
+QString PlotWindow::getYRightRangeMin()
+{
+    return mYRightRangeMin;
+}
+
+QString PlotWindow::getYRightRangeMax()
+{
+    return mYRightRangeMax;
+}
+
 void PlotWindow::setCurveWidth(double width)
 {
   mCurveWidth = width;
@@ -1664,6 +1683,7 @@ void PlotWindow::fitInView()
 {
   mpPlot->getPlotZoomer()->zoom(0);
   mpPlot->setAxisAutoScale(QwtPlot::yLeft);
+  mpPlot->setAxisAutoScale(QwtPlot::yRight);
   mpPlot->setAxisAutoScale(QwtPlot::xBottom);
   mpPlot->replot();
   mpPlot->getPlotZoomer()->setZoomBase(false);
@@ -1953,6 +1973,9 @@ VariablePageWidget::VariablePageWidget(PlotCurve *pPlotCurve, SetupDialog *pSetu
   // toggle sign
   mpToggleSignCheckBox = new QCheckBox(tr("Toggle Sign"));
   mpToggleSignCheckBox->setChecked(mpPlotCurve->getToggleSign());
+  // display on right y-axis
+  mpRightYAxisCheckBox = new QCheckBox(tr("Plot on Right Y-Axis"));
+  mpRightYAxisCheckBox->setChecked(mpPlotCurve->isYAxisRight());
   // appearance layout
   QGridLayout *pAppearanceGroupBoxGridLayout = new QGridLayout;
   pAppearanceGroupBoxGridLayout->addWidget(mpColorLabel, 0, 0);
@@ -1963,7 +1986,8 @@ VariablePageWidget::VariablePageWidget(PlotCurve *pPlotCurve, SetupDialog *pSetu
   pAppearanceGroupBoxGridLayout->addWidget(mpThicknessLabel, 2, 0);
   pAppearanceGroupBoxGridLayout->addWidget(mpThicknessSpinBox, 2, 1, 1, 2);
   pAppearanceGroupBoxGridLayout->addWidget(mpHideCheckBox, 3, 0, 1, 3);
-  pAppearanceGroupBoxGridLayout->addWidget(mpToggleSignCheckBox, 4, 0, 1, 3);
+  pAppearanceGroupBoxGridLayout->addWidget(mpToggleSignCheckBox, 4, 0, 1, 2);
+  pAppearanceGroupBoxGridLayout->addWidget(mpRightYAxisCheckBox, 4, 2, 1, 2);
   mpAppearanceGroupBox->setLayout(pAppearanceGroupBoxGridLayout);
   // set layout
   QGridLayout *pMainLayout = new QGridLayout;
@@ -2144,7 +2168,7 @@ SetupDialog::SetupDialog(PlotWindow *pPlotWindow)
   mpXAxisGroupBox->setLayout(pXGridLayout);
   mpXAxisGroupBox->setEnabled(!mpAutoScaleCheckbox->isChecked());
   // y-axis
-  mpYAxisGroupBox = new QGroupBox(tr("Y-Axis"));
+  mpYAxisGroupBox = new QGroupBox(tr("Left Y-Axis"));
   mpYMinimumLabel = new QLabel(tr("Minimum"));
   mpYMinimumTextBox = new QLineEdit(QString::number(mpPlotWindow->getPlot()->axisScaleDiv(QwtPlot::yLeft).lowerBound()));
   mpYMaximumLabel = new QLabel(tr("Maximum"));
@@ -2156,11 +2180,26 @@ SetupDialog::SetupDialog(PlotWindow *pPlotWindow)
   pYGridLayout->addWidget(mpYMaximumTextBox, 1, 1);
   mpYAxisGroupBox->setLayout(pYGridLayout);
   mpYAxisGroupBox->setEnabled(!mpAutoScaleCheckbox->isChecked());
+  // right y-axis
+  mpYRightAxisGroupBox = new QGroupBox(tr("Right Y-Axis"));
+  mpYRightMinimumLabel = new QLabel(tr("Minimum"));
+  mpYRightMinimumTextBox = new QLineEdit(QString::number(mpPlotWindow->getPlot()->axisScaleDiv(QwtPlot::yRight).lowerBound()));
+  mpYRightMaximumLabel = new QLabel(tr("Maximum"));
+  mpYRightMaximumTextBox = new QLineEdit(QString::number(mpPlotWindow->getPlot()->axisScaleDiv(QwtPlot::yRight).upperBound()));
+  QGridLayout* pYRightGridLayout = new QGridLayout;
+  pYRightGridLayout->addWidget(mpYRightMinimumLabel, 0, 0);
+  pYRightGridLayout->addWidget(mpYRightMinimumTextBox, 0, 1);
+  pYRightGridLayout->addWidget(mpYRightMaximumLabel, 1, 0);
+  pYRightGridLayout->addWidget(mpYRightMaximumTextBox, 1, 1);
+  mpYRightAxisGroupBox->setLayout(pYRightGridLayout);
+  mpYRightAxisGroupBox->setEnabled(!mpAutoScaleCheckbox->isChecked());
   QDoubleValidator *pDoubleValidator = new QDoubleValidator(this);
   mpXMinimumTextBox->setValidator(pDoubleValidator);
   mpXMaximumTextBox->setValidator(pDoubleValidator);
   mpYMinimumTextBox->setValidator(pDoubleValidator);
-  mpXMaximumTextBox->setValidator(pDoubleValidator);
+  mpYMaximumTextBox->setValidator(pDoubleValidator);
+  mpYRightMinimumTextBox->setValidator(pDoubleValidator);
+  mpYRightMaximumTextBox->setValidator(pDoubleValidator);
   mpPrefixUnitsCheckbox = new QCheckBox(tr("Prefix Units"));
   mpPrefixUnitsCheckbox->setChecked(mpPlotWindow->getPrefixUnits());
   // range tab layout
@@ -2169,6 +2208,7 @@ SetupDialog::SetupDialog(PlotWindow *pPlotWindow)
   pRangeTabVerticalLayout->addWidget(mpAutoScaleCheckbox);
   pRangeTabVerticalLayout->addWidget(mpXAxisGroupBox);
   pRangeTabVerticalLayout->addWidget(mpYAxisGroupBox);
+  pRangeTabVerticalLayout->addWidget(mpYRightAxisGroupBox);
   pRangeTabVerticalLayout->addWidget(mpPrefixUnitsCheckbox);
   mpRangeTab->setLayout(pRangeTabVerticalLayout);
   // add tabs
@@ -2242,6 +2282,8 @@ void SetupDialog::setupPlotCurve(VariablePageWidget *pVariablePageWidget, bool p
     pPlotCurve->toggleVisibility(!pVariablePageWidget->getHideCheckBox()->isChecked());
     /* set the curve toggle sign */
     mpPlotWindow->toggleSign(pPlotCurve, pVariablePageWidget->getToggleSignCheckBox()->isChecked());
+    /* set the curve y-axis */
+    mpPlotWindow->setYAxisRight(pPlotCurve, pVariablePageWidget->getYRightAxisCheckBox()->isChecked());
     // if prefixunits value is changed
     if (prefixUnitsChanged) {
       pPlotCurve->plotData();
@@ -2268,6 +2310,7 @@ void SetupDialog::autoScaleChecked(bool checked)
 {
   mpXAxisGroupBox->setEnabled(!checked);
   mpYAxisGroupBox->setEnabled(!checked);
+  mpYRightAxisGroupBox->setEnabled(!checked);
 }
 
 void SetupDialog::saveSetup()
@@ -2302,9 +2345,11 @@ void SetupDialog::applySetup()
   if (mpAutoScaleCheckbox->isChecked()) {
     mpPlotWindow->getPlot()->setAxisAutoScale(QwtPlot::xBottom);
     mpPlotWindow->getPlot()->setAxisAutoScale(QwtPlot::yLeft);
+    mpPlotWindow->getPlot()->setAxisAutoScale(QwtPlot::yRight);
   } else {
     mpPlotWindow->setXRange(mpXMinimumTextBox->text().toDouble(), mpXMaximumTextBox->text().toDouble());
     mpPlotWindow->setYRange(mpYMinimumTextBox->text().toDouble(), mpYMaximumTextBox->text().toDouble());
+    mpPlotWindow->setYRightRange(mpYRightMinimumTextBox->text().toDouble(), mpYRightMaximumTextBox->text().toDouble());
   }
   // update plot
   mpPlotWindow->updatePlot();
