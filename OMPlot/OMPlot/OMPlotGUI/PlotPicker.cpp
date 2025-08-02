@@ -110,6 +110,9 @@ PlotPicker::PlotPicker(QWidget *pCanvas, Plot *pPlot)
 QList<PlotCurve*> PlotPicker::curvesAtPosition(const QPoint pos, QList<int> *indexes) const
 {
   QPointF posF = invTransform(pos);
+  double xTrans =  mpPlot->canvasMap(QwtPlot::xBottom).invTransform(pos.x());
+  QPointF posL(xTrans, mpPlot->canvasMap(QwtPlot::yLeft).invTransform(pos.y()));
+  QPointF posR(xTrans, mpPlot->canvasMap(QwtPlot::yRight).invTransform(pos.y()));
   int index = -1;
   QList<PlotCurve*> plotCurvesList;
   PlotCurve *pPlotCurve = 0;
@@ -136,6 +139,7 @@ QList<PlotCurve*> PlotPicker::curvesAtPosition(const QPoint pos, QList<int> *ind
           QPointF previousCurvePoint(pPlotCurve->mXAxisVector.at(previousIndex), pPlotCurve->mYAxisVector.at(previousIndex));
           QPointF nextCurvePoint(pPlotCurve->mXAxisVector.at(nextIndex), pPlotCurve->mYAxisVector.at(nextIndex));
           // find which point is closest to mouse point.
+          QPointF posF = pPlotCurve->isYAxisRight() ? posR : posL;
           qreal pseudoDistance1 = qPow(posF.x() - previousCurvePoint.x(), 2) + qPow(posF.y() - previousCurvePoint.y(), 2);
           qreal pseudoDistance2 = qPow(posF.x() - nextCurvePoint.x(), 2) + qPow(posF.y() - nextCurvePoint.y(), 2);
           if (pseudoDistance1 < pseudoDistance2) {
@@ -144,11 +148,12 @@ QList<PlotCurve*> PlotPicker::curvesAtPosition(const QPoint pos, QList<int> *ind
             index1 = nextIndex;
           }
         }
-        QList<double> xMajorTicks = mpPlot->getPlotGrid()->xScaleDiv().ticks(QwtScaleDiv::MajorTick);
-        QList<double> yMajorTicks = mpPlot->getPlotGrid()->yScaleDiv().ticks(QwtScaleDiv::MajorTick);
+        QList<double> xMajorTicks = mpPlot->axisScaleDiv(QwtPlot::xBottom).ticks(QwtScaleDiv::MajorTick);
+        auto yAxis = pPlotCurve->yAxis();
+        QList<double> yMajorTicks = mpPlot->axisScaleDiv(yAxis).ticks(QwtScaleDiv::MajorTick);
         if (xMajorTicks.size() > 1 && yMajorTicks.size() > 1) {
           double x = (xMajorTicks[1] - xMajorTicks[0]) / mpPlot->axisMaxMinor(QwtPlot::xBottom);
-          double y = (yMajorTicks[1] - yMajorTicks[0]) / mpPlot->axisMaxMinor(QwtPlot::yLeft);
+          double y = (yMajorTicks[1] - yMajorTicks[0]) / mpPlot->axisMaxMinor(yAxis);
           if (pPlotCurve->mXAxisVector.size() <= index || pPlotCurve->mYAxisVector.size() <= index
               || pPlotCurve->mXAxisVector.size() <= index1 || pPlotCurve->mYAxisVector.size() <= index1) {
             continue;
@@ -192,6 +197,7 @@ QwtText PlotPicker::trackerText(const QPoint &pos) const
       double x = pPlotCurve->mXAxisVector.at(index);
       double y = pPlotCurve->mYAxisVector.at(index);
 
+      pPlotCurve->getPointMarker()->setYAxis(pPlotCurve->yAxis());
       pPlotCurve->getPointMarker()->setValue(x, y);
       pPlotCurve->getPointMarker()->setVisible(true);
 
