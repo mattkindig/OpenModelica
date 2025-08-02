@@ -55,6 +55,10 @@ Legend::Legend(Plot *pParent)
   mpToggleSignAction->setCheckable(true);
   connect(mpToggleSignAction, SIGNAL(triggered(bool)), SLOT(toggleSign(bool)));
 
+  mpToggleAxisAction = new QAction(tr("Right Y-Axis"), this);
+  mpToggleAxisAction->setCheckable(true);
+  connect(mpToggleAxisAction, SIGNAL(triggered(bool)), SLOT(switchAxis(bool)));
+    
   mpSetupAction = new QAction(tr("Setup"), this);
   connect(mpSetupAction, SIGNAL(triggered()), SLOT(showSetupDialog()));
 
@@ -111,6 +115,30 @@ void Legend::toggleSign(bool checked)
   }
 }
 
+void Legend::switchAxis(bool checked)
+{
+    if (! mpPlotCurve) {
+       return;
+    }
+    mpPlotCurve->setYAxisRight(checked);
+    mpPlotCurve = 0;
+    // display axis (left or right) only if axis is assigned to at least one curve
+    bool leftAxisVisible = false, rightAxisVisible = false;
+    foreach (PlotCurve* pPlotCurve, mpPlot->getPlotCurvesList()) {
+        if (pPlotCurve->isYAxisRight()) {
+            rightAxisVisible = true;
+        }
+        else {
+            leftAxisVisible = true;
+        }
+        if (rightAxisVisible && leftAxisVisible)  break;
+    }
+    mpPlot->setAxisVisible(QwtPlot::yLeft, leftAxisVisible);
+    mpPlot->setAxisVisible(QwtPlot::yRight, rightAxisVisible);
+    mpPlot->getParentPlotWindow()->updatePlot();
+    return;
+}
+
 void Legend::showSetupDialog()
 {
   if (mpPlotCurve) {
@@ -133,7 +161,11 @@ void Legend::legendMenu(const QPoint& pos)
     bool state = mpToggleSignAction->blockSignals(true);
     mpToggleSignAction->setChecked(mpPlotCurve->getToggleSign());
     mpToggleSignAction->blockSignals(state);
+    state = mpToggleAxisAction->blockSignals(true);
+    mpToggleAxisAction->setChecked(mpPlotCurve->isYAxisRight());
+    mpToggleAxisAction->blockSignals(state);
     menu.addAction(mpToggleSignAction);
+    menu.addAction(mpToggleAxisAction);
     menu.addSeparator();
     menu.addAction(mpSetupAction);
     menu.exec(mapToGlobal(pos));
