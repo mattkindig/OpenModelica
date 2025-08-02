@@ -99,6 +99,8 @@ public:
   void addYAxisValue(double value);
   void updateYAxisValue(int index, double value);
   void clearYAxisVector() {mYAxisVector.clear();}
+  void setYAxisRight(bool right);
+  bool isYAxisRight() const {return QwtPlotCurve::yAxis() == QwtPlot::yRight;}
   int getXAxisSize() const;
   int getYAxisSize() const;
   void setFileName(QString fileName);
