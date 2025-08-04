@@ -111,8 +111,8 @@ PlotPicker::PlotPicker(QWidget *pCanvas, Plot *pPlot)
 QList<PlotCurve*> PlotPicker::curvesAtPosition(const QPoint pos, QList<int> *indexes) const
 {
   double xTrans =  mpPlot->canvasMap(QwtPlot::xBottom).invTransform(pos.x());
-  QPointF posL(xTrans, mpPlot->canvasMap(QwtAxis::Position::YLeft).invTransform(pos.y()));
-  QPointF posR(xTrans, mpPlot->canvasMap(QwtAxis::Position::YRight).invTransform(pos.y()));
+  QPointF posL(xTrans, mpPlot->canvasMap(QwtPlot::yLeft).invTransform(pos.y()));
+  QPointF posR(xTrans, mpPlot->canvasMap(QwtPlot::yRight).invTransform(pos.y()));
   int index = -1;
   QList<PlotCurve*> plotCurvesList;
   PlotCurve *pPlotCurve = 0;
