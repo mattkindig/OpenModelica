@@ -1890,6 +1890,12 @@ bool PlotWindow::toggleSign(PlotCurve *pPlotCurve, bool checked)
   return toggleSign;
 }
 
+void PlotWindow::setYAxisRight(PlotCurve* pPlotCurve, bool right) {
+    if (pPlotCurve) {
+		pPlotCurve->setYAxisRight(right);
+    }
+}
+
 void PlotWindow::showSetupDialog()
 {
   SetupDialog *pSetupDialog = new SetupDialog(this);

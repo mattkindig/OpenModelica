@@ -39,6 +39,7 @@
 #include "ScaleDraw.h"
 
 #include "qwt_text.h"
+#include "qwt_scale_map.h"    // for canvasMap()
 
 #include <QToolTip>
 #include <QtMath>
@@ -109,10 +110,9 @@ PlotPicker::PlotPicker(QWidget *pCanvas, Plot *pPlot)
  */
 QList<PlotCurve*> PlotPicker::curvesAtPosition(const QPoint pos, QList<int> *indexes) const
 {
-  QPointF posF = invTransform(pos);
   double xTrans =  mpPlot->canvasMap(QwtPlot::xBottom).invTransform(pos.x());
-  QPointF posL(xTrans, mpPlot->canvasMap(QwtPlot::yLeft).invTransform(pos.y()));
-  QPointF posR(xTrans, mpPlot->canvasMap(QwtPlot::yRight).invTransform(pos.y()));
+  QPointF posL(xTrans, mpPlot->canvasMap(QwtAxis::Position::YLeft).invTransform(pos.y()));
+  QPointF posR(xTrans, mpPlot->canvasMap(QwtAxis::Position::YRight).invTransform(pos.y()));
   int index = -1;
   QList<PlotCurve*> plotCurvesList;
   PlotCurve *pPlotCurve = 0;
@@ -125,6 +125,7 @@ QList<PlotCurve*> PlotPicker::curvesAtPosition(const QPoint pos, QList<int> *ind
       index = pPlotCurve->closestPoint(pos);
       if (index > -1) {
         int index1, previousIndex, nextIndex;
+        QPointF posF = pPlotCurve->isYAxisRight() ? posR : posL;
         if (index == 0) {
           index1 = 1;
         } else if (index == pPlotCurve->mXAxisVector.size() - 1 || index == pPlotCurve->mYAxisVector.size() - 1) {
@@ -139,7 +140,6 @@ QList<PlotCurve*> PlotPicker::curvesAtPosition(const QPoint pos, QList<int> *ind
           QPointF previousCurvePoint(pPlotCurve->mXAxisVector.at(previousIndex), pPlotCurve->mYAxisVector.at(previousIndex));
           QPointF nextCurvePoint(pPlotCurve->mXAxisVector.at(nextIndex), pPlotCurve->mYAxisVector.at(nextIndex));
           // find which point is closest to mouse point.
-          QPointF posF = pPlotCurve->isYAxisRight() ? posR : posL;
           qreal pseudoDistance1 = qPow(posF.x() - previousCurvePoint.x(), 2) + qPow(posF.y() - previousCurvePoint.y(), 2);
           qreal pseudoDistance2 = qPow(posF.x() - nextCurvePoint.x(), 2) + qPow(posF.y() - nextCurvePoint.y(), 2);
           if (pseudoDistance1 < pseudoDistance2) {

@@ -100,7 +100,7 @@ public:
   void updateYAxisValue(int index, double value);
   void clearYAxisVector() {mYAxisVector.clear();}
   void setYAxisRight(bool right);
-  bool isYAxisRight() const {return QwtPlotCurve::yAxis() == QwtPlot::yRight;}
+  bool isYAxisRight() const {return QwtPlotCurve::yAxis() == QwtAxis::Position::YRight;}
   int getXAxisSize() const;
   int getYAxisSize() const;
   void setFileName(QString fileName);

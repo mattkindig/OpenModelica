@@ -122,7 +122,7 @@ void Legend::switchAxis(bool checked)
     }
     mpPlotCurve->setYAxisRight(checked);
     mpPlotCurve = 0;
-    // display axis (left or right) only if axis is assigned to at least one curve
+    // display y-axis (left or right) only if axis is assigned to at least one curve
     bool leftAxisVisible = false, rightAxisVisible = false;
     foreach (PlotCurve* pPlotCurve, mpPlot->getPlotCurvesList()) {
         if (pPlotCurve->isYAxisRight()) {
