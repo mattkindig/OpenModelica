@@ -498,6 +498,12 @@ void PlotWindowContainer::addArrayParametricPlotWindow()
   }
 }
 
+void PlotWindowContainer::addOutputTableWindow()
+{
+    
+
+}
+
 /*!
  * \brief PlotWindowContainer::addAnimationWindow
  * Adds an animation widget as subwindow

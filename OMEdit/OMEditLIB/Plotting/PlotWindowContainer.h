@@ -76,6 +76,7 @@ public slots:
   void addParametricPlotWindow();
   void addArrayPlotWindow();
   void addArrayParametricPlotWindow();
+  void addOutputTableWindow();
   OMPlot::PlotWindow* addInteractivePlotWindow(QString owner = QString(), int port = 0);
   void addAnimationWindow();
   void addDiagramWindow(ModelWidget *pModelWidget = 0);
