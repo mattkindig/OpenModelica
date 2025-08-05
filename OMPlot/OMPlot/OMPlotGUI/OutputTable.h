@@ -41,6 +41,8 @@
 namespace OMPlot 
 {
 
+class TableModel;
+
 class OutputTable : public QTableView
 {
 	Q_OBJECT
