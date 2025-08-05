@@ -29,43 +29,56 @@
  *
  */
 
-#ifndef OUTPUT_TABLE_H
-#define OUTPUT_TABLE_H
+#include "OutputTable.h"
 
-#include "OMPlot.h"
-#include "PlotWindowContainer.h"
+namespace OMPlot {
 
-#include <QAbstractTableModel>
-#include <QTableView>
 
-namespace OMPlot 
+OutputTable::OutputTable(TableModel* model, QWidget* parent) :
+	QTableView(parent) 
 {
-
-class TableModel;
-
-class OutputTable : public QTableView
-{
-	Q_OBJECT
-public:
-	OutputTable(TableModel* model, QWidget* parent=nullptr);
-	~OutputTable();
-};
-
-class TableModel : public QAbstractTableModel
-{
-	Q_OBJECT
-public:
-	TableModel(QObject* parent = nullptr);
-	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-	int columnCount(const QModelIndex& parent = QModelIndex()) const override;
-	QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-	void setTimeVariable(QString timeVariable);
-	void getTimeVariable() const { return mTimeVariable; }
-private:
-	QString mTimeVariable;
-	QVector<double> mTimeData;
-	QStringList mVariableList;
-	QHash<QString, QVector<double>> mVariableData;
+	setModel(model);
 }
 
-#endif   // OUTPUT_TABLE_H
+OutputTable::~OutputTable()
+{
+}
+
+
+TableModel::TableModel(QObject* parent) :
+	QAbstractTableModel(parent)
+{
+
+}
+
+TableModel::setTimeVariable(QString timeVariable)
+{
+	mTimeVariable = timeVariable;
+}
+
+int TableModel::rowCount(const QModelIndex& parent = QModelIndex()) const 
+{
+	return mTimeData.size();
+}
+
+int TableModel::columnCount(const QModelIndex & parent = QModelIndex()) const
+{
+	return 1 + mVariableList.size();
+}
+
+QVariant TableModel::data(const QModelIndex& index, int role = Qt::DisplayRole) const
+{
+	int row = index.row();
+	int column = index.column();
+	if ((!index.isValid) || (row >= rowCount()) || (column >= columnCount())) {
+		return QVariant();   // invalid
+	}
+	return QVariant();
+}
+
+void TableModel::setTimeVariable(QString timeVariable) 
+{
+	mTimeVariable = timeVariable;
+}
+
+}  // namespace OMPlot
