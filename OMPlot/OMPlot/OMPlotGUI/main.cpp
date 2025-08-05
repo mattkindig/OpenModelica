@@ -80,6 +80,7 @@ void printUsage(bool shortDescription)
     printf("    --plot                     Create a normal plot\n");
     printf("    --plotAll                  Create a normal plot containing every variable in the result-file\n");
     printf("    --plotParametric           Create a parametric plot (plot variables as functions of each other)\n");
+    printf("    --table                    Create an output table\n");
     printf("    --title=TITLE              Sets the TITLE of the plot window\n");
     printf("    --xlabel=LABEL             Use LABEL as the label of the x-axis\n");
     printf("    --xrange=LEFT:RIGHT        Sets the initial range of the x-axis to LEFT:RIGHT\n");
@@ -132,7 +133,9 @@ int main(int argc, char *argv[])
       plottype = "plotAll";
     } else if (strcmp(argv[i], "--plotParametric") == 0) {
       plottype = "plotParametric";
-    } else if (strncmp(argv[i], "--xlabel=",9) == 0) {
+    } else if (strcmp(argv[i], "--table") == 0) {
+      plottype = "table";
+    } else if (strncmp(argv[i], "--xlabel=", 9) == 0) {
       xlabel = argv[i]+9;
     } else if (strncmp(argv[i], "--ylabel=",9) == 0) {
       ylabel = argv[i]+9;

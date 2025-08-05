@@ -77,6 +77,7 @@ PlotWindow::PlotWindow(QStringList arguments, QWidget *parent, bool isInteractiv
   p.setColor(QPalette::Window, Qt::white);
   setAutoFillBackground(true);
   setPalette(p);
+  setObjectName("plotWindow");
   // setup the main window widget
   setUpWidget(toolbarIconSize);
   // Keep default legend font since greek-mu for micro is not displayed correctly with monospaced font.

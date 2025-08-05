@@ -64,6 +64,7 @@ public:
   bool isPlotWindow(QObject *pObject);
   bool isAnimationWindow(QObject *pObject);
   bool isDiagramWindow(QObject *pObject);
+  bool isResultTable(QObject* pObject);
   bool isUniqueName(QString name);
   bool eventFilter(QObject *pObject, QEvent *pEvent);
   void removePlotCurves(OMPlot::PlotWindow *pPlotWindow);
@@ -76,6 +77,7 @@ public slots:
   void addParametricPlotWindow();
   void addArrayPlotWindow();
   void addArrayParametricPlotWindow();
+  void addOutputTableWindow();
   OMPlot::PlotWindow* addInteractivePlotWindow(QString owner = QString(), int port = 0);
   void addAnimationWindow();
   void addDiagramWindow(ModelWidget *pModelWidget = 0);

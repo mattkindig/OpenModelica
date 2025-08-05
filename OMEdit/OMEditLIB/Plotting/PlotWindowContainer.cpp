@@ -40,6 +40,7 @@
 #include "Plotting/VariablesWidget.h"
 #include "Plotting/DiagramWindow.h"
 #include "PlotCurve.h"
+#include "OutputTable.h"
 
 #include <QInputDialog>
 #include <QMessageBox>
@@ -209,9 +210,12 @@ QMdiSubWindow* PlotWindowContainer::getDiagramSubWindowFromMdi()
  */
 bool PlotWindowContainer::isPlotWindow(QObject *pObject)
 {
-  if (pObject && 0 != pObject->objectName().compare("animationWindow")
+  /*if (pObject && 0 != pObject->objectName().compare("animationWindow")
       && 0 != pObject->objectName().compare("diagramWindow")) {
     return true;
+  }*/
+  if (pObject && 0 == pObject->objectName().compare("plotWindow")) {
+      return true;
   }
   return false;
 }
@@ -243,6 +247,21 @@ bool PlotWindowContainer::isDiagramWindow(QObject *pObject)
   }
   return false;
 }
+
+/*!
+ * \brief PlotWindowContainer::isResultTable
+ * Returns true if pObject is a ResultTable.
+ * \param pObject
+ * \return
+ */
+bool PlotWindowContainer::isResultTable(QObject* pObject)
+{
+  if (pObject && 0 == pObject->objectName().compare("resultTable")) {
+     return true;
+  }
+  return false;
+}
+
 
 /*!
  * \brief PlotWindowContainer::eventFilter
@@ -496,6 +515,25 @@ void PlotWindowContainer::addArrayParametricPlotWindow()
   catch (PlotException &e) {
     MessagesWidget::instance()->addGUIMessage(MessageItem(MessageItem::Modelica, e.what(), Helper::scriptingKind, Helper::errorLevel));
   }
+}
+
+void PlotWindowContainer::addOutputTableWindow()
+{
+   try {
+     OutputTable* pOutputTable = new OutputTable("", QStringList(), this, false);
+     pOutputTable->setWindowTitle(getUniqueName("Output Table : "));
+     pOutputTable->installEventFilter(this);
+     bool maximize = subWindowList().isEmpty();
+     QMdiSubWindow* pSubWindow = addSubWindow(pOutputTable);
+     pSubWindow->setWindowIcon(QIcon(":/Resources/icons/output-table-window.svg"));
+     pOutputTable->show();
+     if (maximize) {
+         pOutputTable->setWindowState(Qt::WindowMaximized);
+     }
+   }
+   catch (PlotException& e) {
+        MessagesWidget::instance()->addGUIMessage(MessageItem(MessageItem::Modelica, e.what(), Helper::scriptingKind, Helper::errorLevel));
+   }
 }
 
 /*!

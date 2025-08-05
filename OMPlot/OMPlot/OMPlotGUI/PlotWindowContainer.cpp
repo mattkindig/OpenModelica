@@ -74,18 +74,29 @@ PlotWindow* PlotWindowContainer::getCurrentWindow()
 
 void PlotWindowContainer::addPlotWindow(QStringList arguments)
 {
-  PlotWindow *pPlotWindow = new PlotWindow(arguments, this);
-  if (pPlotWindow->isPlot() || pPlotWindow->isPlotAll()) {
-    pPlotWindow->setWindowTitle(QString(getUniqueName()).append(" - x(t)"));
+  QWidget* pWindow = nullptr;
+  if (arguments[4].compare("table", Qt::CaseInsensitive) == 0) {
+    QString filename = arguments[1];
+    QStringList variables = arguments.mid(22, -1);
+    OutputTable *pOutputTable = new OutputTable(filename, variables);
+    pOutputTable->setWindowTitle(QString(getUniqueName("Table")));
+    pWindow = qobject_cast<QWidget*>(pOutputTable);
   } else {
-    pPlotWindow->setWindowTitle(QString(getUniqueName()).append(" - x(y)"));
+      PlotWindow* pPlotWindow = new PlotWindow(arguments, this);
+      if (pPlotWindow->isPlot() || pPlotWindow->isPlotAll()) {
+          pPlotWindow->setWindowTitle(QString(getUniqueName()).append(" - x(t)"));
+      }
+      else {
+          pPlotWindow->setWindowTitle(QString(getUniqueName()).append(" - x(y)"));
+      }
+      pWindow = qobject_cast<QWidget*>(pPlotWindow);
   }
-  connect(pPlotWindow, SIGNAL(closingDown()), SLOT(checkSubWindows()));
-  setActiveSubWindow(addSubWindow(pPlotWindow));
+  connect(pWindow, SIGNAL(closingDown()), SLOT(checkSubWindows()));
+  setActiveSubWindow(addSubWindow(pWindow));
   if (viewMode() == QMdiArea::TabbedView) {
-    pPlotWindow->showMaximized();
+      pWindow->showMaximized();
   } else {
-    pPlotWindow->show();
+      pWindow->show();
   }
   getPlotMainWindow()->activateWindow();
 }

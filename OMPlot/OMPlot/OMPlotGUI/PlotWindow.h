@@ -69,6 +69,7 @@ namespace OMPlot
 {
 class Plot;
 class PlotCurve;
+class OutputTable;
 
 class PlotWindow : public QMainWindow
 {

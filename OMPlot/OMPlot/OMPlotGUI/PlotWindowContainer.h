@@ -34,6 +34,7 @@
 
 #include "PlotMainWindow.h"
 #include "PlotWindow.h"
+#include "OutputTable.h"
 
 #include <QMdiArea>
 
