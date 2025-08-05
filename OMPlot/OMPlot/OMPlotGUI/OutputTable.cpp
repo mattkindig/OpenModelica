@@ -37,7 +37,7 @@ namespace OMPlot {
 OutputTable::OutputTable(TableModel* model, QWidget* parent) :
 	QTableView(parent) 
 {
-	QTableView::setModel(model);
+	//QTableView::setModel(model);
 }
 
 OutputTable::~OutputTable()
