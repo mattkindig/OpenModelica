@@ -4125,6 +4125,9 @@ void MainWindow::createActions()
   mpNewArrayParametricPlotWindowAction = new QAction(QIcon(":/Resources/icons/array-parametric-plot-window.svg"), tr("New Array Parametric Plot Window"), this);
   mpNewArrayParametricPlotWindowAction->setStatusTip(tr("Inserts new array parametric plot window"));
   connect(mpNewArrayParametricPlotWindowAction, SIGNAL(triggered()), mpPlotWindowContainer, SLOT(addArrayParametricPlotWindow()));
+  mpNewOutputTableWindowAction = new QAction(QIcon(":/Resources/icons/print.svg"), tr("New Output Table Window"), this);
+  mpNewOutputTableWindowAction->setStatusTip(tr("Inserts new output table window"));
+  connect(mpNewOutputTableWindowAction, SIGNAL(triggered()), mpPlotWindowContainer, SLOT(addArrayParametricPlotWindow()));
 #if !defined(WITHOUT_OSG)
   // new mpAnimationWindowAction plot action
   mpNewAnimationWindowAction = new QAction(QIcon(":/Resources/icons/animation.svg"), tr("New Animation Window"), this);

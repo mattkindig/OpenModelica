@@ -430,6 +430,7 @@ private:
   QAction *mpNewParametricPlotWindowAction;
   QAction *mpNewArrayPlotWindowAction;
   QAction *mpNewArrayParametricPlotWindowAction;
+  QAction *mpNewOutputTableWindowAction;
 #if !defined(WITHOUT_OSG)
   QAction *mpNewAnimationWindowAction;
 #endif
