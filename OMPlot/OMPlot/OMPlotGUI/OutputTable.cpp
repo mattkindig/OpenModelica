@@ -37,7 +37,7 @@ namespace OMPlot {
 OutputTable::OutputTable(TableModel* model, QWidget* parent) :
 	QTableView(parent) 
 {
-	setModel(model);
+	QTableView::setModel(model);
 }
 
 OutputTable::~OutputTable()
@@ -51,7 +51,7 @@ TableModel::TableModel(QObject* parent) :
 
 }
 
-TableModel::setTimeVariable(QString timeVariable)
+void TableModel::setTimeVariable(QString timeVariable)
 {
 	mTimeVariable = timeVariable;
 }

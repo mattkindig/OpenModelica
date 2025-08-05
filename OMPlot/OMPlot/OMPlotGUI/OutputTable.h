@@ -41,13 +41,11 @@
 namespace OMPlot 
 {
 
-class TableModel;
-
 class OutputTable : public QTableView
 {
 	Q_OBJECT
 public:
-	OutputTable(TableModel* model, QWidget* parent=nullptr);
+	OutputTable(TableModel *model=nullptr, QWidget *parent=nullptr);
 	~OutputTable();
 };
 
@@ -55,17 +53,18 @@ class TableModel : public QAbstractTableModel
 {
 	Q_OBJECT
 public:
-	TableModel(QObject* parent = nullptr);
+	TableModel(QObject *parent = nullptr);
 	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 	int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 	QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 	void setTimeVariable(QString timeVariable);
-	void getTimeVariable() const { return mTimeVariable; }
+	QString getTimeVariable() const { return mTimeVariable; }
 private:
 	QString mTimeVariable;
 	QVector<double> mTimeData;
 	QStringList mVariableList;
 	QHash<QString, QVector<double>> mVariableData;
-}
+};
 
+}  // namespace OMPlot
 #endif   // OUTPUT_TABLE_H

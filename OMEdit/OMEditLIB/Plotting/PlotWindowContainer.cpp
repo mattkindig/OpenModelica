@@ -40,6 +40,7 @@
 #include "Plotting/VariablesWidget.h"
 #include "Plotting/DiagramWindow.h"
 #include "PlotCurve.h"
+#include "OutputTable.h"
 
 #include <QInputDialog>
 #include <QMessageBox>
@@ -501,7 +502,7 @@ void PlotWindowContainer::addArrayParametricPlotWindow()
 void PlotWindowContainer::addOutputTableWindow()
 {
    try {
-     OutputTable* pOutputTable = new OutputTable();
+     OutputTable* pOutputTable = new OutputTable(nullptr);
      QMdiSubWindow* pSubWindow = addSubWindow(pOutputTable);
      pOutputTable->setWindowState(Qt::WindowMaximized);
    }
