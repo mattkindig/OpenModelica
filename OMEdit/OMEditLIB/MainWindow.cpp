@@ -4128,7 +4128,7 @@ void MainWindow::createActions()
   // new output plot window action
   mpNewOutputTableWindowAction = new QAction(QIcon(":/Resources/icons/output-table-window.svg"), tr("New Output Table Window"), this);
   mpNewOutputTableWindowAction->setStatusTip(tr("Inserts new output table window"));
-  connect(mpNewOutputTableWindowAction, SIGNAL(triggered()), mpPlotWindowContainer, SLOT(addArrayParametricPlotWindow()));
+  connect(mpNewOutputTableWindowAction, SIGNAL(triggered()), mpPlotWindowContainer, SLOT(addOutputTableWindow()));
 #if !defined(WITHOUT_OSG)
   // new mpAnimationWindowAction plot action
   mpNewAnimationWindowAction = new QAction(QIcon(":/Resources/icons/animation.svg"), tr("New Animation Window"), this);

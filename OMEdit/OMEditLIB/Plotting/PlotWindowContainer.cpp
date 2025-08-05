@@ -500,8 +500,14 @@ void PlotWindowContainer::addArrayParametricPlotWindow()
 
 void PlotWindowContainer::addOutputTableWindow()
 {
-    
-
+   try {
+     OutputTable* pOutputTable = new OutputTable();
+     QMdiSubWindow* pSubWindow = addSubWindow(pOutputTable);
+     pOutputTable->setWindowState(Qt::WindowMaximized);
+   }
+   catch (PlotException& e) {
+        MessagesWidget::instance()->addGUIMessage(MessageItem(MessageItem::Modelica, e.what(), Helper::scriptingKind, Helper::errorLevel));
+   }
 }
 
 /*!
