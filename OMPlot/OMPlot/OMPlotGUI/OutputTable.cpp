@@ -34,10 +34,11 @@
 namespace OMPlot {
 
 
-OutputTable::OutputTable(TableModel* model, QWidget* parent) :
+OutputTable::OutputTable(const QStringList arguments, QWidget* parent) :
 	QTableView(parent) 
 {
-	//QTableView::setModel(model);
+	mModel = new TableModel(arguments);
+	setModel(mModel);
 }
 
 OutputTable::~OutputTable()
@@ -45,10 +46,10 @@ OutputTable::~OutputTable()
 }
 
 
-TableModel::TableModel(QObject* parent) :
+TableModel::TableModel(QStringList arguments, QObject* parent) :
 	QAbstractTableModel(parent)
 {
-
+	
 }
 
 void TableModel::setTimeVariable(QString timeVariable)

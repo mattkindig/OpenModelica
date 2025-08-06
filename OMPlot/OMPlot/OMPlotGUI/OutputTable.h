@@ -47,21 +47,24 @@ class OutputTable : public QTableView
 {
 	Q_OBJECT
 public:
-	OutputTable(TableModel *model=nullptr, QWidget *parent=nullptr);
+	OutputTable(const QStringList arguments = QStringList(), QWidget *parent=nullptr);
 	~OutputTable();
+private:
+	TableModel* mModel;  // associated model
 };
 
 class TableModel : public QAbstractTableModel
 {
 	Q_OBJECT
 public:
-	TableModel(QObject *parent = nullptr);
+	TableModel(QStringList arguments = QStringList(), QObject *parent = nullptr);
 	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 	int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 	QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 	void setTimeVariable(QString timeVariable);
 	QString getTimeVariable() const { return mTimeVariable; }
 private:
+	QFile mFile;
 	QString mTimeVariable;
 	QVector<double> mTimeData;
 	QStringList mVariableList;
