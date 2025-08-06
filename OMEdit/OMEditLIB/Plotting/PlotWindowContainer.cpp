@@ -502,7 +502,7 @@ void PlotWindowContainer::addArrayParametricPlotWindow()
 void PlotWindowContainer::addOutputTableWindow()
 {
    try {
-     OutputTable* pOutputTable = new OutputTable(nullptr);
+     OutputTable* pOutputTable = new OutputTable(QStringList(), nullptr);
      QMdiSubWindow* pSubWindow = addSubWindow(pOutputTable);
      pOutputTable->setWindowState(Qt::WindowMaximized);
    }

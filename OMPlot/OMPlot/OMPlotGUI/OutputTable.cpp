@@ -74,7 +74,38 @@ QVariant TableModel::data(const QModelIndex& index, int role) const
 	if ((!index.isValid()) || (row >= rowCount()) || (column >= columnCount())) {
 		return QVariant();   // invalid
 	}
-	return QVariant();
+	QString variable = mVariableList[row];
+	QVector<double> data = mVariableData.value(variable);
+	double value = data[column];
+	return QVariant(value);
 }
 
 }  // namespace OMPlot
+
+
+/*
+QHash<QString, StringPair> units;
+
+foreach (QString arg, args) {
+   if (arg.isEmpty()) continue;
+   QChar delimiter = arg[0];
+   QStringList fields = arg.remove(0,1).split(delimiter, Qt::KeepEmptyParts);
+   QString variableName, unit, displayUnit;
+   switch (fields.size()) {
+	case 0:   // empty string
+	   continue;
+	case 3:
+	default:
+	   displayUnit = fields[2].trimmed();
+	   // fallthrough
+	case 2:
+	   unit = fields[1].trimmed();
+	   // fallthrough
+	case 1:
+	   variableName = fields[0].trimmed();
+	}
+	variables.append(variableName);
+	units.insert(variableName, qMakePair(unit,displayUnit));
+}
+
+*/
