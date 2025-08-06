@@ -56,29 +56,24 @@ void TableModel::setTimeVariable(QString timeVariable)
 	mTimeVariable = timeVariable;
 }
 
-int TableModel::rowCount(const QModelIndex& parent = QModelIndex()) const 
+int TableModel::rowCount(const QModelIndex& parent) const 
 {
 	return mTimeData.size();
 }
 
-int TableModel::columnCount(const QModelIndex & parent = QModelIndex()) const
+int TableModel::columnCount(const QModelIndex &parent) const
 {
 	return 1 + mVariableList.size();
 }
 
-QVariant TableModel::data(const QModelIndex& index, int role = Qt::DisplayRole) const
+QVariant TableModel::data(const QModelIndex& index, int role) const
 {
 	int row = index.row();
 	int column = index.column();
-	if ((!index.isValid) || (row >= rowCount()) || (column >= columnCount())) {
+	if ((!index.isValid()) || (row >= rowCount()) || (column >= columnCount())) {
 		return QVariant();   // invalid
 	}
 	return QVariant();
-}
-
-void TableModel::setTimeVariable(QString timeVariable) 
-{
-	mTimeVariable = timeVariable;
 }
 
 }  // namespace OMPlot

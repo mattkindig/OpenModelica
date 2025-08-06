@@ -11,6 +11,7 @@ set(OMPLOTLIB_SOURCES Plot.cpp
                       PlotApplication.cpp
                       PlotWindowContainer.cpp
                       PlotMainWindow.cpp
+		      OutputTable.cpp
                       ScaleDraw.cpp
                       LogScaleEngine.cpp
                       LinearScaleEngine.cpp
@@ -27,6 +28,7 @@ set(OMPLOTLIB_HEADERS OMPlot.h
                       PlotApplication.h
                       PlotWindowContainer.h
                       PlotMainWindow.h
+	      	      OutputTable.h
                       ScaleDraw.h
                       LogScaleEngine.h
                       LinearScaleEngine.h)
