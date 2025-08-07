@@ -503,8 +503,15 @@ void PlotWindowContainer::addOutputTableWindow()
 {
    try {
      OutputTable* pOutputTable = new OutputTable(QStringList(), nullptr);
+     pOutputTable->setWindowTitle(getUniqueName("Output Table : "));
+     pOutputTable->installEventFilter(this);
+     bool maximize = subWindowList().isEmpty();
      QMdiSubWindow* pSubWindow = addSubWindow(pOutputTable);
-     pOutputTable->setWindowState(Qt::WindowMaximized);
+     pSubWindow->setWindowIcon(QIcon(":/Resources/icons/output-table-window.svg"));
+     pOutputTable->show();
+     if (maximize) {
+         pOutputTable->setWindowState(Qt::WindowMaximized);
+     }
    }
    catch (PlotException& e) {
         MessagesWidget::instance()->addGUIMessage(MessageItem(MessageItem::Modelica, e.what(), Helper::scriptingKind, Helper::errorLevel));
