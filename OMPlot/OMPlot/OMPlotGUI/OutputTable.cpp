@@ -45,12 +45,32 @@ OutputTable::~OutputTable()
 {
 }
 
+void OutputTable::initializeTable(const QStringList arguments)
+{
+	// extract parameters that are part of model
+	QStringList tableArgs;
+	tableArgs << arguments[1];
+	mModel->initializeModel(tableArgs);
+}
+
 
 TableModel::TableModel(QStringList arguments, QObject* parent) :
 	QAbstractTableModel(parent)
 {
-	
+	if (!arguments.isEmpty()) {
+		initializeModel(arguments);
+	}
 }
+
+void TableModel::initializeModel(QStringList arguments)
+{
+	QString file = QString(arguments[1]);
+	mFile.setFileName(file);
+	if (!mFile.exists()) {
+		throw NoFileException(QString("File not found : ").append(file).toStdString().c_str());
+	}
+}
+
 
 void TableModel::setTimeVariable(QString timeVariable)
 {

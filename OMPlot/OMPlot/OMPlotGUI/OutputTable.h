@@ -49,6 +49,7 @@ class OutputTable : public QTableView
 public:
 	OutputTable(const QStringList arguments = QStringList(), QWidget *parent=nullptr);
 	~OutputTable();
+	void initializeTable(const QStringList arguments = QStringList());
 private:
 	TableModel* mModel;  // associated model
 };
@@ -58,6 +59,7 @@ class TableModel : public QAbstractTableModel
 	Q_OBJECT
 public:
 	TableModel(QStringList arguments = QStringList(), QObject *parent = nullptr);
+	void initializeModel(QStringList arguments = QStringList());
 	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
 	int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 	QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
