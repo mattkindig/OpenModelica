@@ -442,6 +442,14 @@ void Plot::replot()
   } else {
     setAxisTitle(QwtPlot::yLeft, mpParentPlotWindow->getYCustomLabel());
   }
+
+  if (mpParentPlotWindow->getYRightCustomLabel().isEmpty()) {
+    setAxisTitle(QwtPlot::yRight, "");
+  }
+  else {
+    setAxisTitle(QwtPlot::yRight, mpParentPlotWindow->getYRightCustomLabel());
+  }
+
 }
 
 } // namespace OMPlot

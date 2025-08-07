@@ -95,6 +95,7 @@ private:
   QString mYLabel;
   QString mXCustomLabel;
   QString mYCustomLabel;
+  QString mYRightCustomLabel;
   QString mXUnit;
   QString mXDisplayUnit;
   QString mYUnit;
@@ -168,6 +169,8 @@ public:
   QString getXCustomLabel() const {return mXCustomLabel;}
   void setYCustomLabel(const QString &label) {mYCustomLabel = label;}
   QString getYCustomLabel() const {return mYCustomLabel;}
+  void setYRightCustomLabel(const QString& label) {mYRightCustomLabel = label;}
+  QString getYRightCustomLabel() const {return mYRightCustomLabel;}
   void setXUnit(QString xUnit) {mXUnit = xUnit;}
   QString getXUnit() {return mXUnit;}
   void setXDisplayUnit(QString xDisplayUnit) {mXDisplayUnit = xDisplayUnit;}
@@ -323,6 +326,12 @@ private:
   QDoubleSpinBox *mpVerticalAxisTitleFontSizeSpinBox;
   QLabel *mpVerticalAxisNumbersFontSizeLabel;
   QDoubleSpinBox *mpVerticalAxisNumbersFontSizeSpinBox;
+  QLabel* mpRightVerticalAxisLabel;
+  QLineEdit* mpRightVerticalAxisTextBox;
+  QLabel* mpRightVerticalAxisTitleFontSizeLabel;
+  QDoubleSpinBox* mpRightVerticalAxisTitleFontSizeSpinBox;
+  QLabel* mpRightVerticalAxisNumbersFontSizeLabel;
+  QDoubleSpinBox* mpRightVerticalAxisNumbersFontSizeSpinBox;
   QLabel *mpHorizontalAxisLabel;
   QLineEdit *mpHorizontalAxisTextBox;
   QLabel *mpHorizontalAxisTitleFontSizeLabel;
