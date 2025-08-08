@@ -117,25 +117,11 @@ void Legend::toggleSign(bool checked)
 
 void Legend::switchAxis(bool checked)
 {
-    if (! mpPlotCurve) {
-       return;
+    if (mpPlotCurve) {
+        mpPlotCurve->setYAxisRight(checked);
+        mpPlotCurve = 0;
+        mpPlot->getParentPlotWindow()->updatePlot();
     }
-    mpPlotCurve->setYAxisRight(checked);
-    mpPlotCurve = 0;
-    // display y-axis (left or right) only if axis is assigned to at least one curve
-    bool leftAxisVisible = false, rightAxisVisible = false;
-    foreach (PlotCurve* pPlotCurve, mpPlot->getPlotCurvesList()) {
-        if (pPlotCurve->isYAxisRight()) {
-            rightAxisVisible = true;
-        }
-        else {
-            leftAxisVisible = true;
-        }
-        if (rightAxisVisible && leftAxisVisible)  break;
-    }
-    mpPlot->setAxisVisible(QwtPlot::yLeft, leftAxisVisible);
-    mpPlot->setAxisVisible(QwtPlot::yRight, rightAxisVisible);
-    mpPlot->getParentPlotWindow()->updatePlot();
     return;
 }
 

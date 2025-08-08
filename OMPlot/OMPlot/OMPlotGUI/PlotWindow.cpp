@@ -2086,7 +2086,7 @@ SetupDialog::SetupDialog(PlotWindow *pPlotWindow)
   mpVerticalAxisNumbersFontSizeSpinBox->setValue(mpPlotWindow->getPlot()->axisWidget(QwtPlot::yLeft)->font().pointSizeF());
   mpVerticalAxisNumbersFontSizeSpinBox->setSingleStep(1);
   mpRightVerticalAxisLabel = new QLabel(tr("Right Vertical Axis Title"));
-  mpRightVerticalAxisTextBox = new QLineEdit(mpPlotWindow->getYCustomLabel());
+  mpRightVerticalAxisTextBox = new QLineEdit(mpPlotWindow->getYRightCustomLabel());
   mpRightVerticalAxisTitleFontSizeLabel = new QLabel("Right Vertical Axis Title Font Size");
   mpRightVerticalAxisTitleFontSizeSpinBox = new QDoubleSpinBox;
   mpRightVerticalAxisTitleFontSizeSpinBox->setRange(6, std::numeric_limits<double>::max());
@@ -2144,8 +2144,8 @@ SetupDialog::SetupDialog(PlotWindow *pPlotWindow)
 #if QWT_VERSION > 0x060000
   pTitlesTabGridLayout->addWidget(mpPlotFooterLabel, 11, 0);
   pTitlesTabGridLayout->addWidget(mpPlotFooterTextBox, 11, 1);
-  pTitlesTabGridLayout->addWidget(mpFooterFontSizeLabel, 11, 0);
-  pTitlesTabGridLayout->addWidget(mpFooterFontSizeSpinBox, 11, 1);
+  pTitlesTabGridLayout->addWidget(mpFooterFontSizeLabel, 12, 0);
+  pTitlesTabGridLayout->addWidget(mpFooterFontSizeSpinBox, 12, 1);
 #endif
   mpTitlesTab->setLayout(pTitlesTabGridLayout);
   // legend tab
@@ -2354,11 +2354,13 @@ void SetupDialog::applySetup()
   }
   // set the font sizes. Don't move this line. We should set the font sizes before calling setLegendPosition
   mpPlotWindow->getPlot()->setFontSizes(mpTitleFontSizeSpinBox->value(), mpVerticalAxisTitleFontSizeSpinBox->value(), mpVerticalAxisNumbersFontSizeSpinBox->value(),
+                                        mpRightVerticalAxisTitleFontSizeSpinBox->value(), mpRightVerticalAxisNumbersFontSizeSpinBox->value(),
                                         mpHorizontalAxisTitleFontSizeSpinBox->value(), mpHorizontalAxisNumbersFontSizeSpinBox->value(), mpFooterFontSizeSpinBox->value(),
                                         mpLegendFontSizeSpinBox->value());
   // set the titles
   mpPlotWindow->getPlot()->setTitle(mpPlotTitleTextBox->text());
   mpPlotWindow->setYCustomLabel(mpVerticalAxisTextBox->text());
+  mpPlotWindow->setYRightCustomLabel(mpRightVerticalAxisTextBox->text());
   mpPlotWindow->setXCustomLabel(mpHorizontalAxisTextBox->text());
   mpPlotWindow->setFooter(mpPlotFooterTextBox->text());
   // set the legend
