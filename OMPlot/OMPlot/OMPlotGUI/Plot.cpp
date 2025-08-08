@@ -438,12 +438,8 @@ void Plot::replot()
       mPlotCurvesList[i]->setPen(pen);
     }
     mPlotCurvesList[i]->setTitleLocal();
-    if (mPlotCurvesList[i]->isYAxisRight()) {
-        rightAxisVisible = true;
-    }
-    else {
-        leftAxisVisible = true;
-    }
+    rightAxisVisible = rightAxisVisible || mPlotCurvesList[i]->isYAxisRight();
+    leftAxisVisible = leftAxisVisible || (!mPlotCurvesList[i]->isYAxisRight());
   }
   setAxisVisible(QwtPlot::yLeft, leftAxisVisible);
   setAxisVisible(QwtPlot::yRight, rightAxisVisible);
@@ -473,7 +469,7 @@ void Plot::replot()
   if (mpParentPlotWindow->getYRightCustomLabel().isEmpty()) {
     setAxisTitle(QwtPlot::yRight, "");
   }
-  else if (axisEnabled(QwtPlot::yRight) && isAxisVisible(QwtPlot::yRight)) {
+  else {
     setAxisTitle(QwtPlot::yRight, mpParentPlotWindow->getYRightCustomLabel());
   }
 
