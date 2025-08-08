@@ -1855,13 +1855,17 @@ void PlotWindow::setLogY(bool on)
   if (on) {
 #if QWT_VERSION >= 0x060100
     mpPlot->setAxisScaleEngine(QwtPlot::yLeft, new LogScaleEngine);
+    mpPlot->setAxisScaleEngine(QwtPlot::yRight, new LogScaleEngine);
 #else
     mpPlot->setAxisScaleEngine(QwtPlot::yLeft, new QwtLog10ScaleEngine);
+    mpPlot->setAxisScaleEngine(QwtPlot::yRight, new QwtLog10ScaleEngine);
 #endif
   } else {
     mpPlot->setAxisScaleEngine(QwtPlot::yLeft, new LinearScaleEngine);
+    mpPlot->setAxisScaleEngine(QwtPlot::yRight, new LinearScaleEngine);
   }
   mpPlot->setAxisAutoScale(QwtPlot::yLeft);
+  mpPlot->setAxisAutoScale(QwtPlot::yRight);
   bool state = mpLogYCheckBox->blockSignals(true);
   mpLogYCheckBox->setChecked(on);
   mpLogYCheckBox->blockSignals(state);
