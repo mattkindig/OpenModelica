@@ -48,8 +48,7 @@ OutputTable::~OutputTable()
 void OutputTable::initializeTable(const QStringList arguments)
 {
 	// extract parameters that are part of model
-	QStringList tableArgs;
-	tableArgs << arguments[1];
+	QStringList tableArgs() << arguments[1];
 	mModel->initializeModel(tableArgs);
 }
 
@@ -64,7 +63,7 @@ TableModel::TableModel(QStringList arguments, QObject* parent) :
 
 void TableModel::initializeModel(QStringList arguments)
 {
-	QString file = QString(arguments[1]);
+	QString file(arguments[1]);
 	mFile.setFileName(file);
 	if (!mFile.exists()) {
 		throw NoFileException(QString("File not found : ").append(file).toStdString().c_str());
@@ -101,31 +100,3 @@ QVariant TableModel::data(const QModelIndex& index, int role) const
 }
 
 }  // namespace OMPlot
-
-
-/*
-QHash<QString, StringPair> units;
-
-foreach (QString arg, args) {
-   if (arg.isEmpty()) continue;
-   QChar delimiter = arg[0];
-   QStringList fields = arg.remove(0,1).split(delimiter, Qt::KeepEmptyParts);
-   QString variableName, unit, displayUnit;
-   switch (fields.size()) {
-	case 0:   // empty string
-	   continue;
-	case 3:
-	default:
-	   displayUnit = fields[2].trimmed();
-	   // fallthrough
-	case 2:
-	   unit = fields[1].trimmed();
-	   // fallthrough
-	case 1:
-	   variableName = fields[0].trimmed();
-	}
-	variables.append(variableName);
-	units.insert(variableName, qMakePair(unit,displayUnit));
-}
-
-*/
