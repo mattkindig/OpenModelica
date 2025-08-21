@@ -1184,6 +1184,7 @@ UnboundParameter3.mo \
 UnboundParameter4.mo \
 UnboundParameter5.mo \
 UnboundParameter6.mo \
+UnboundParameter7.mo \
 usertype1.mo \
 usertype2.mo \
 usertype3.mo \
@@ -1195,6 +1196,7 @@ VectorizeBindings2.mo \
 VectorizeBindings3.mo \
 VectorizeBindings4.mo \
 VectorizeBindings5.mo \
+VectorizeBindings6.mo \
 VectorTest.mo \
 Visibility1.mo \
 Visibility2.mo \

@@ -323,6 +323,7 @@ void PlotWindowContainer::addPlotWindow()
     QMdiSubWindow *pSubWindow = addSubWindow(pPlotWindow);
     PlottingPage *pPlottingPage = OptionsDialog::instance()->getPlottingPage();
     pPlotWindow->getPlot()->setFontSizes(pPlottingPage->getTitleFontSizeSpinBox()->value(), pPlottingPage->getVerticalAxisTitleFontSizeSpinBox()->value(), pPlottingPage->getVerticalAxisNumbersFontSizeSpinBox()->value(),
+                                         pPlottingPage->getVerticalAxisTitleFontSizeSpinBox()->value(), pPlottingPage->getVerticalAxisNumbersFontSizeSpinBox()->value(),
                                          pPlottingPage->getHorizontalAxisTitleFontSizeSpinBox()->value(), pPlottingPage->getHorizontalAxisNumbersFontSizeSpinBox()->value(), pPlottingPage->getFooterFontSizeSpinBox()->value(),
                                          pPlottingPage->getLegendFontSizeSpinBox()->value());
     addCloseActionsToSubWindowSystemMenu(pSubWindow);
@@ -358,6 +359,7 @@ void PlotWindowContainer::addParametricPlotWindow()
     QMdiSubWindow *pSubWindow = addSubWindow(pPlotWindow);
     PlottingPage *pPlottingPage = OptionsDialog::instance()->getPlottingPage();
     pPlotWindow->getPlot()->setFontSizes(pPlottingPage->getTitleFontSizeSpinBox()->value(), pPlottingPage->getVerticalAxisTitleFontSizeSpinBox()->value(), pPlottingPage->getVerticalAxisNumbersFontSizeSpinBox()->value(),
+                                         pPlottingPage->getVerticalAxisTitleFontSizeSpinBox()->value(), pPlottingPage->getVerticalAxisNumbersFontSizeSpinBox()->value(),
                                          pPlottingPage->getHorizontalAxisTitleFontSizeSpinBox()->value(), pPlottingPage->getHorizontalAxisNumbersFontSizeSpinBox()->value(), pPlottingPage->getFooterFontSizeSpinBox()->value(),
                                          pPlottingPage->getLegendFontSizeSpinBox()->value());
     addCloseActionsToSubWindowSystemMenu(pSubWindow);
@@ -401,6 +403,7 @@ void PlotWindowContainer::addArrayPlotWindow()
     QMdiSubWindow *pSubWindow = addSubWindow(pPlotWindow);
     PlottingPage *pPlottingPage = OptionsDialog::instance()->getPlottingPage();
     pPlotWindow->getPlot()->setFontSizes(pPlottingPage->getTitleFontSizeSpinBox()->value(), pPlottingPage->getVerticalAxisTitleFontSizeSpinBox()->value(), pPlottingPage->getVerticalAxisNumbersFontSizeSpinBox()->value(),
+                                         pPlottingPage->getVerticalAxisTitleFontSizeSpinBox()->value(), pPlottingPage->getVerticalAxisNumbersFontSizeSpinBox()->value(),
                                          pPlottingPage->getHorizontalAxisTitleFontSizeSpinBox()->value(), pPlottingPage->getHorizontalAxisNumbersFontSizeSpinBox()->value(), pPlottingPage->getFooterFontSizeSpinBox()->value(),
                                          pPlottingPage->getLegendFontSizeSpinBox()->value());
     addCloseActionsToSubWindowSystemMenu(pSubWindow);
@@ -439,6 +442,7 @@ PlotWindow* PlotWindowContainer::addInteractivePlotWindow(QString owner, int por
     QMdiSubWindow *pSubWindow = addSubWindow(pPlotWindow);
     PlottingPage *pPlottingPage = OptionsDialog::instance()->getPlottingPage();
     pPlotWindow->getPlot()->setFontSizes(pPlottingPage->getTitleFontSizeSpinBox()->value(), pPlottingPage->getVerticalAxisTitleFontSizeSpinBox()->value(), pPlottingPage->getVerticalAxisNumbersFontSizeSpinBox()->value(),
+                                         pPlottingPage->getVerticalAxisTitleFontSizeSpinBox()->value(), pPlottingPage->getVerticalAxisNumbersFontSizeSpinBox()->value(),
                                          pPlottingPage->getHorizontalAxisTitleFontSizeSpinBox()->value(), pPlottingPage->getHorizontalAxisNumbersFontSizeSpinBox()->value(), pPlottingPage->getFooterFontSizeSpinBox()->value(),
                                          pPlottingPage->getLegendFontSizeSpinBox()->value());
     pPlotWindow->setSubWindow(pSubWindow);
@@ -484,6 +488,7 @@ void PlotWindowContainer::addArrayParametricPlotWindow()
     QMdiSubWindow *pSubWindow = addSubWindow(pPlotWindow);
     PlottingPage *pPlottingPage = OptionsDialog::instance()->getPlottingPage();
     pPlotWindow->getPlot()->setFontSizes(pPlottingPage->getTitleFontSizeSpinBox()->value(), pPlottingPage->getVerticalAxisTitleFontSizeSpinBox()->value(), pPlottingPage->getVerticalAxisNumbersFontSizeSpinBox()->value(),
+                                         pPlottingPage->getVerticalAxisTitleFontSizeSpinBox()->value(), pPlottingPage->getVerticalAxisNumbersFontSizeSpinBox()->value(),
                                          pPlottingPage->getHorizontalAxisTitleFontSizeSpinBox()->value(), pPlottingPage->getHorizontalAxisNumbersFontSizeSpinBox()->value(), pPlottingPage->getFooterFontSizeSpinBox()->value(),
                                          pPlottingPage->getLegendFontSizeSpinBox()->value());
     addCloseActionsToSubWindowSystemMenu(pSubWindow);

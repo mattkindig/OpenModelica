@@ -1690,7 +1690,7 @@ void MainWindow::PlotCallbackFunction(void *p, int externalWindow, const char* f
           }
         }
         pVariablesTreeModel->setData(index, Qt::Checked, Qt::CheckStateRole);
-        pMainWindow->getVariablesWidget()->plotVariables(index, pPlotWindow->getCurveWidth(), pPlotWindow->getCurveStyle(), false, pPlotCurve);
+        pMainWindow->getVariablesWidget()->plotVariables(index, pPlotWindow->getCurveWidth(), pPlotWindow->getCurveStyle(), Qt::NoModifier, pPlotCurve);
       }
     }
     // variables list is empty for plotAll
@@ -4508,11 +4508,6 @@ void MainWindow::switchToWelcomePerspective()
 #define ADD_SHOW_DIAGRAMVIEW() \
   if (mpPlotWindowContainer->getDiagramWindow() && mpPlotWindowContainer->getDiagramWindow()->getModelWidget()) { \
     ModelWidget *pModelWidget = mpPlotWindowContainer->getDiagramWindow()->getModelWidget(); \
-    pModelWidget->getDiagramGraphicsView()->setIsVisualizationView(false); \
-    if ((pModelWidget->getIconGraphicsView() && pModelWidget->getIconGraphicsView()->isVisible()) \
-        || (pModelWidget->getEditor() && pModelWidget->getEditor()->isVisible())) { \
-      pModelWidget->getDiagramGraphicsView()->hide(); \
-    } \
     mpPlotWindowContainer->getDiagramWindow()->removeVisualizationDiagram(); \
     pModelWidget->getDiagramGraphicsView()->emitResetDynamicSelect(); \
     pModelWidget->getMainLayout()->addWidget(pModelWidget->getDiagramGraphicsView(), 1); \
@@ -4526,7 +4521,6 @@ void MainWindow::switchToModelingPerspective()
 {
   ADD_SHOW_DIAGRAMVIEW();
   mpCentralStackedWidget->setCurrentWidget(mpModelWidgetContainer);
-  mpModelWidgetContainer->currentModelWidgetChanged(mpModelWidgetContainer->getCurrentMdiSubWindow());
   if (OptionsDialog::instance()->getGeneralSettingsPage()->getHideVariablesBrowserCheckBox()->isChecked()) {
     mpVariablesDockWidget->hide();
   }
@@ -4556,7 +4550,6 @@ void MainWindow::switchToPlottingPerspective()
   }
   ModelWidget *pModelWidget = mpModelWidgetContainer->getCurrentModelWidget();
   mpCentralStackedWidget->setCurrentWidget(mpPlotWindowContainer);
-  mpModelWidgetContainer->currentModelWidgetChanged(0);
   mpUndoAction->setEnabled(false);
   mpRedoAction->setEnabled(false);
   mpModelSwitcherToolButton->setEnabled(false);
@@ -4602,7 +4595,6 @@ void MainWindow::switchToPlottingPerspective()
 void MainWindow::switchToAlgorithmicDebuggingPerspective()
 {
   mpCentralStackedWidget->setCurrentWidget(mpModelWidgetContainer);
-  mpModelWidgetContainer->currentModelWidgetChanged(mpModelWidgetContainer->getCurrentMdiSubWindow());
   if (OptionsDialog::instance()->getGeneralSettingsPage()->getHideVariablesBrowserCheckBox()->isChecked()) {
     mpVariablesDockWidget->hide();
   }

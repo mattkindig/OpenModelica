@@ -370,7 +370,7 @@ void GraphicsView::drawElements(ModelInstance::Model *pModelInstance, bool inher
       if (pModelInstanceElement->isComponent() && pModelInstanceElement->getModel()) {
         auto pModelInstanceComponent = dynamic_cast<ModelInstance::Component*>(pModelInstanceElement);
         elementIndex++;
-        if (pModelInstanceComponent->getModel()->isConnector()) {
+        if (pModelInstanceComponent->isConnector()) {
           connectorIndex++;
         }
         if (modelInfo.mDiagramElementsList.isEmpty() || inherited) {
@@ -386,7 +386,7 @@ void GraphicsView::drawElements(ModelInstance::Model *pModelInstance, bool inher
               pDiagramGraphicsView->addElementItem(pDiagramElement);
               pDiagramGraphicsView->addElementToList(pDiagramElement);
               pDiagramGraphicsView->deleteElementFromOutOfSceneList(pDiagramElement);
-              if (pModelInstanceComponent->getModel()->isConnector() && connectorIndex < modelInfo.mIconElementsList.size()) {
+              if (pModelInstanceComponent->isConnector() && connectorIndex < modelInfo.mIconElementsList.size()) {
                 Element *pIconElement = modelInfo.mIconElementsList.at(connectorIndex);
                 if (pIconElement) {
                   pIconElement->setModelComponent(pModelInstanceComponent);
@@ -938,14 +938,14 @@ void GraphicsView::addElementToView(ModelInstance::Component *pComponent, bool i
   GraphicsView *pDiagramGraphicsView = mpModelWidget->getDiagramGraphicsView();
 
   // if element is of connector type.
-  if (pComponent && pComponent->getModel()->isConnector()) {
+  if (pComponent && pComponent->isConnector()) {
     // Connector type elements exists on icon view as well
     pIconElement = new Element(pComponent, inherited, pIconGraphicsView, createTransformation, position, placementAnnotation);
   }
   pDiagramElement = new Element(pComponent, inherited, pDiagramGraphicsView, createTransformation, position, placementAnnotation);
 
   // if element is of connector type && containing class is Modelica type.
-  if (pIconElement && pComponent->getModel()->isConnector()) {
+  if (pIconElement && pComponent->isConnector()) {
     // Connector type elements exists on icon view as well
     if (pIconElement->mTransformation.isValid() && pIconElement->mTransformation.getVisible()) {
       pIconGraphicsView->addElementItem(pIconElement);
@@ -1120,7 +1120,7 @@ void GraphicsView::deleteElement(Element *pElement)
   if (mpModelWidget->getLibraryTreeItem()->isSSP()) {
     OMSProxy::instance()->omsDelete(pElement->getLibraryTreeItem()->getNameStructure());
   } else {
-    if (pElement->getModel() && pElement->getModel()->isConnector()) {
+    if (pElement->isConnector()) {
       GraphicsView *pGraphicsView;
       if (isIconView()) {
         pGraphicsView = mpModelWidget->getDiagramGraphicsView();
@@ -3113,12 +3113,12 @@ Element* GraphicsView::connectorElementAtPosition(QPoint position)
         return 0;
       } else if (pRootElement && !pRootElement->isSelected()) {
         // Issue #11310. If both root and element are connectors then use the root.
-        if (pRootElement->getModel() && pRootElement->getModel()->isConnector() && pElement && pElement->getModel() && pElement->getModel()->isConnector()) {
+        if (pRootElement->isConnector() && pElement && pElement->isConnector()) {
           pElement = pRootElement;
         }
         if (MainWindow::instance()->getConnectModeAction()->isChecked() && isDiagramView() &&
             !(mpModelWidget->getLibraryTreeItem()->isSystemLibrary() || mpModelWidget->isElementMode() || isVisualizationView()) &&
-            ((pElement->getModel() && pElement->getModel()->isConnector()) ||
+            (pElement->isConnector() ||
              (mpModelWidget->getLibraryTreeItem()->isSSP() &&
               (pElement->getLibraryTreeItem()->getOMSConnector() || pElement->getLibraryTreeItem()->getOMSBusConnector()
                || pElement->getLibraryTreeItem()->getOMSTLMBusConnector() || pElement->isPort())))) {
@@ -3640,7 +3640,7 @@ void GraphicsView::copyItems(bool cut)
           QJsonObject componentJsonObject;
           componentJsonObject.insert(QLatin1String("classname"), pElement->getClassName());
           componentJsonObject.insert(QLatin1String("name"), pElement->getName());
-          componentJsonObject.insert(QLatin1String("connector"), pElement->getModel() ? pElement->getModel()->isConnector() : false);
+          componentJsonObject.insert(QLatin1String("connector"), pElement->isConnector());
           componentJsonObject.insert(QLatin1String("placement"), pElement->getOMCPlacementAnnotation(QPointF(0, 0)));
           componentsJsonArray.append(componentJsonObject);
         } else if (ShapeAnnotation *pShapeAnnotation = dynamic_cast<ShapeAnnotation*>(itemsList.at(i))) {
@@ -7018,7 +7018,7 @@ void ModelWidget::selectDeselectElement(const QString &name, bool selected)
       pDiagramElement->setIgnoreSelection(true);
       pDiagramElement->setSelected(selected);
       pDiagramElement->setIgnoreSelection(false);
-      if (mpIconGraphicsView && pDiagramElement->getModel() && pDiagramElement->getModel()->isConnector()) {
+      if (mpIconGraphicsView && pDiagramElement->isConnector()) {
         Element *pIconElement = mpIconGraphicsView->getElementObjectFromQualifiedName(name);
         pIconElement->setIgnoreSelection(true);
         pIconElement->setSelected(selected);
@@ -7480,7 +7480,6 @@ void ModelWidget::showIconView(bool checked)
   if (pSubWindow) {
     pSubWindow->setWindowIcon(ResourceCache::getIcon(":/Resources/icons/model.svg"));
   }
-  mpModelWidgetContainer->currentModelWidgetChanged(mpModelWidgetContainer->getCurrentMdiSubWindow());
   mpIconGraphicsView->setFocus(Qt::ActiveWindowFocusReason);
   if (!checked || (checked && mpIconGraphicsView->isVisible())) {
     return;
@@ -7493,7 +7492,7 @@ void ModelWidget::showIconView(bool checked)
   mpIconGraphicsView->show();
   mpIconGraphicsView->setFocus();
   mpModelWidgetContainer->setPreviousViewType(StringHandler::Icon);
-  updateUndoRedoActions();
+  mpModelWidgetContainer->currentModelWidgetChanged(mpModelWidgetContainer->getCurrentMdiSubWindow());
   MainWindow::instance()->getPositionLabel()->clear();
 }
 
@@ -7515,7 +7514,6 @@ void ModelWidget::showDiagramView(bool checked)
   if (pSubWindow) {
     pSubWindow->setWindowIcon(ResourceCache::getIcon(":/Resources/icons/modeling.png"));
   }
-  mpModelWidgetContainer->currentModelWidgetChanged(mpModelWidgetContainer->getCurrentMdiSubWindow());
   mpDiagramGraphicsView->setFocus(Qt::ActiveWindowFocusReason);
   if (!checked || (checked && mpDiagramGraphicsView->isVisible())) {
     return;
@@ -7530,7 +7528,7 @@ void ModelWidget::showDiagramView(bool checked)
   mpDiagramGraphicsView->show();
   mpDiagramGraphicsView->setFocus();
   mpModelWidgetContainer->setPreviousViewType(StringHandler::Diagram);
-  updateUndoRedoActions();
+  mpModelWidgetContainer->currentModelWidgetChanged(mpModelWidgetContainer->getCurrentMdiSubWindow());
   MainWindow::instance()->getPositionLabel()->clear();
 }
 
@@ -7548,7 +7546,6 @@ void ModelWidget::showTextView(bool checked)
   if (QMdiSubWindow *pSubWindow = mpModelWidgetContainer->getCurrentMdiSubWindow()) {
     pSubWindow->setWindowIcon(ResourceCache::getIcon(":/Resources/icons/modeltext.svg"));
   }
-  mpModelWidgetContainer->currentModelWidgetChanged(mpModelWidgetContainer->getCurrentMdiSubWindow());
   mpViewTypeLabel->setText(StringHandler::getViewType(StringHandler::ModelicaText));
   if (mpIconGraphicsView) {
     mpIconGraphicsView->hide();
@@ -7560,7 +7557,7 @@ void ModelWidget::showTextView(bool checked)
     mpEditor->getPlainTextEdit()->updateCursorPosition();
   }
   mpModelWidgetContainer->setPreviousViewType(StringHandler::ModelicaText);
-  updateUndoRedoActions();
+  mpModelWidgetContainer->currentModelWidgetChanged(mpModelWidgetContainer->getCurrentMdiSubWindow());
 }
 
 /*!
@@ -8359,13 +8356,18 @@ void ModelWidgetContainer::currentModelWidgetChanged(QMdiSubWindow *pSubWindow)
     }
     // update the Undo/Redo actions
     pModelWidget->updateUndoRedoActions();
+    // We always hide DiagramGraphicsView here and then show it depending on the view type. See issue #14101.
+    if (pModelWidget->getDiagramGraphicsView()) {
+      pModelWidget->getDiagramGraphicsView()->hide();
+    }
     // set the focus when ModelWidget is changed so that the keyboard shortcuts can work e.g., ctrl+v
     if (pModelWidget->getIconGraphicsView() && pModelWidget->getIconGraphicsView()->isVisible()) {
       pModelWidget->getIconGraphicsView()->setFocus(Qt::ActiveWindowFocusReason);
-    } else if (pModelWidget->getDiagramGraphicsView() && pModelWidget->getDiagramGraphicsView()->isVisible()) {
-      pModelWidget->getDiagramGraphicsView()->setFocus(Qt::ActiveWindowFocusReason);
-    } else if (pModelWidget->getEditor() && pModelWidget->getEditor()) {
+    } else if (pModelWidget->getEditor() && pModelWidget->getEditor()->isVisible()) {
       pModelWidget->getEditor()->getPlainTextEdit()->setFocus(Qt::ActiveWindowFocusReason);
+    } else if (pModelWidget->getDiagramGraphicsView()) {
+      pModelWidget->getDiagramGraphicsView()->show();
+      pModelWidget->getDiagramGraphicsView()->setFocus(Qt::ActiveWindowFocusReason);
     }
   } else {
     MainWindow::instance()->getUndoAction()->setEnabled(false);
