@@ -31,6 +31,8 @@
 
 #include "OutputTable.h"
 
+#include <QStandardItemModel>
+
 namespace OMPlot {
 
 
@@ -39,6 +41,7 @@ OutputTable::OutputTable(const QStringList arguments, QWidget* parent) :
 {
 	mModel = new TableModel(arguments);
 	setModel(mModel);
+	initializeTable(arguments);
 }
 
 OutputTable::~OutputTable()
@@ -48,15 +51,22 @@ OutputTable::~OutputTable()
 void OutputTable::initializeTable(const QStringList arguments)
 {
 	// extract parameters that are part of model
-	QStringList tableArgs() << arguments[1];
+	QStringList(tableArgs);
+	tableArgs << arguments[1];
 	mModel->initializeModel(tableArgs);
+	for (int row = 0; row < mModel->rowCount(); row++) {
+		for (int column = 0; column < mModel->columnCount(); column++) {
+			QStandardItem* item = new QStandardItem(QString("iii"));
+			mModel->setItem(row, column, item);
+		}
+	}
 }
 
 
 TableModel::TableModel(QStringList arguments, QObject* parent) :
 	QAbstractTableModel(parent)
 {
-	if (!arguments.isEmpty()) {
+	if (false) { //(!arguments.isEmpty()) {
 		initializeModel(arguments);
 	}
 }
@@ -78,12 +88,12 @@ void TableModel::setTimeVariable(QString timeVariable)
 
 int TableModel::rowCount(const QModelIndex& parent) const 
 {
-	return mTimeData.size();
+	return 2; // mTimeData.size();
 }
 
 int TableModel::columnCount(const QModelIndex &parent) const
 {
-	return 1 + mVariableList.size();
+	return 3; // 1 + mVariableList.size();
 }
 
 QVariant TableModel::data(const QModelIndex& index, int role) const
@@ -93,10 +103,17 @@ QVariant TableModel::data(const QModelIndex& index, int role) const
 	if ((!index.isValid()) || (row >= rowCount()) || (column >= columnCount())) {
 		return QVariant();   // invalid
 	}
+	/*
 	QString variable = mVariableList[row];
 	QVector<double> data = mVariableData.value(variable);
 	double value = data[column];
 	return QVariant(value);
+	*/
+
+	// example code from https://doc.qt.io/qt-6/modelview.html
+	if (role == Qt::DisplayRole) {
+		return QString("Row%1, Column%2").arg(index.row() + 1).arg(index.column() + 1);
+	}
 }
 
 }  // namespace OMPlot
