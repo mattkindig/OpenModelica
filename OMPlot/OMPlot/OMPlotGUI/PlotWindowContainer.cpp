@@ -78,15 +78,14 @@ void PlotWindowContainer::addPlotWindow(QStringList arguments)
   if (arguments[4].compare("table", Qt::CaseInsensitive) == 0) {
     QString filename = arguments[1];
     QStringList variables = arguments.mid(22, -1);
-    OutputTable *pOutputTable = new OutputTable(filename, variables);
+    OutputTable *pOutputTable = new OutputTable(filename, variables, this, false);
     pOutputTable->setWindowTitle(QString(getUniqueName("Table")));
     pWindow = qobject_cast<QWidget*>(pOutputTable);
   } else {
       PlotWindow* pPlotWindow = new PlotWindow(arguments, this);
       if (pPlotWindow->isPlot() || pPlotWindow->isPlotAll()) {
           pPlotWindow->setWindowTitle(QString(getUniqueName()).append(" - x(t)"));
-      }
-      else {
+      } else {
           pPlotWindow->setWindowTitle(QString(getUniqueName()).append(" - x(y)"));
       }
       pWindow = qobject_cast<QWidget*>(pPlotWindow);

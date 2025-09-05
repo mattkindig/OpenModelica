@@ -183,6 +183,23 @@ AnimationWindow* PlotWindowContainer::getCurrentAnimationWindow()
 #endif
 
 /*!
+ * \brief PlotWindowContainer::getCurrentResultTable
+ * Returns the current results table, if the last window is not a table, return null
+ * \return
+ */
+
+OutputTable* PlotWindowContainer::getCurrentResultTable()
+{
+  if (subWindowList(QMdiArea::ActivationHistoryOrder).size() == 0) {
+    return 0;
+  } else if (isResultTable(subWindowList(QMdiArea::ActivationHistoryOrder).last()->widget())) {
+    return qobject_cast<OutputTable*>(subWindowList(QMdiArea::ActivationHistoryOrder).last()->widget());
+  } else {
+    return 0;
+  }
+}
+
+/*!
  * \brief PlotWindowContainer::getDiagramSubWindowFromMdi
  * Returns the diagram sub window, if there is any in the PlotWindowContainer
  * \return
@@ -210,10 +227,6 @@ QMdiSubWindow* PlotWindowContainer::getDiagramSubWindowFromMdi()
  */
 bool PlotWindowContainer::isPlotWindow(QObject *pObject)
 {
-  /*if (pObject && 0 != pObject->objectName().compare("animationWindow")
-      && 0 != pObject->objectName().compare("diagramWindow")) {
-    return true;
-  }*/
   if (pObject && 0 == pObject->objectName().compare("plotWindow")) {
       return true;
   }
@@ -624,18 +637,22 @@ void PlotWindowContainer::renamePlotWindow()
 
 /*!
  * \brief PlotWindowContainer::clearPlotWindow
- * Clears the plot window
+ * Clears the plot window or result table, if the active window
  */
 void PlotWindowContainer::clearPlotWindow()
 {
   PlotWindow *pPlotWindow = getCurrentWindow();
-  if (!pPlotWindow) {
+  OutputTable* pResultTable = getCurrentResultTable();
+  if (pPlotWindow) {
+     removePlotCurves(pPlotWindow);
+     pPlotWindow->updatePlot();
+  } else if (pResultTable) {
+     pResultTable->clear();
+  } else {
     QMessageBox::information(this, QString(Helper::applicationName).append(" - ").append(Helper::information),
-                             tr("No plot window is active for clearing curves."), QMessageBox::Ok);
+                             tr("No plot window or result table is active for clearing curves."), QMessageBox::Ok);
     return;
   }
-  removePlotCurves(pPlotWindow);
-  pPlotWindow->updatePlot();
   MainWindow::instance()->getVariablesWidget()->updateVariablesTreeHelper(subWindowList(QMdiArea::ActivationHistoryOrder).last());
 }
 

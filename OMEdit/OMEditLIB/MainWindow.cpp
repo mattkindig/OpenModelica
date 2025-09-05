@@ -4144,8 +4144,8 @@ void MainWindow::createActions()
   mpExportVariablesAction->setStatusTip(tr("Exports the plotted variables to a CSV file"));
   connect(mpExportVariablesAction, SIGNAL(triggered()), mpPlotWindowContainer, SLOT(exportVariables()));
   // clear plot window action
-  mpClearPlotWindowAction = new QAction(QIcon(":/Resources/icons/clear.svg"), tr("Clear Plot Window"), this);
-  mpClearPlotWindowAction->setStatusTip(tr("Clears all the curves from the plot window"));
+  mpClearPlotWindowAction = new QAction(QIcon(":/Resources/icons/clear.svg"), tr("Clear Window"), this);
+  mpClearPlotWindowAction->setStatusTip(tr("Clears all data from the plot window or result table"));
   connect(mpClearPlotWindowAction, SIGNAL(triggered()), mpPlotWindowContainer, SLOT(clearPlotWindow()));
   // Add System Action
   mpAddSystemAction = new QAction(QIcon(":/Resources/icons/add-system.svg"), Helper::addSystem, this);

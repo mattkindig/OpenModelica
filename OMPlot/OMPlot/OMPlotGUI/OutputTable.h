@@ -37,6 +37,8 @@
 
 #include <QAbstractTableModel>
 #include <QTableView>
+#include <QFileInfo>
+#include <QDateTime>
 
 namespace OMPlot 
 {
@@ -51,6 +53,7 @@ public:
 	~OutputTable();
 	TableModel* getModel() const { return mModel; }
 	bool isInteractive() const { return mInteractive; }
+	void clear();
 private:
 	TableModel* mModel;  // associated model
 	bool mInteractive;
@@ -67,24 +70,27 @@ public:
 	int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 	QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
 	QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
-	QStringList retrieveVariableData(const QStringList variableList);
+	QStringList updateVariableData(QString filename = "", const QStringList variables = QStringList());
 	void setTimeVariable(QString timeVariable);
 	QString getTimeVariable() const { return mTimeVariable; }
 	void setTimeUnit(QString timeUnit) { mTimeUnit = timeUnit; }
 	QString getTimeUnit() { return mTimeUnit; }
 	QVector<double> getTimes() const { return mTimeData;  }
 	QStringList getVariables() const { return mVariableList; }
-	QVector<double> getVariableData(QString variableName) const { return mVariableData.value(variableName, QVector<double>()); }
-	bool isDefined() const { return mDefined; }
+	QVector<double> getVariableVector(QString variableName) const { return mVariableData.value(variableName, QVector<double>()); }
+	double getVariableData(QString variableName, qsizetype timeIndex, bool* valid) const { return 0.0;  }
+	bool isDefined() const;
 	QString getFilename() const { return mFile.fileName(); }
+	QString getAbsoluteFilepath() const { return mFile.absoluteFilePath(); }
 	void clearModel();
 
 signals:
 	void closingDown();
 
 private:
-	bool mDefined;
-	QFile mFile;
+	QStringList retrieveVariableDataFromFile(const QStringList variableList);
+	QFileInfo mFile;
+	QDateTime mFileLastModified;
 	QString mTimeVariable;
 	QString mTimeUnit;
 	QVector<double> mTimeData;
