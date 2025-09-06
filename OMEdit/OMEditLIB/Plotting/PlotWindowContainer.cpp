@@ -130,15 +130,16 @@ PlotWindow* PlotWindowContainer::getCurrentWindow()
  * Returns the topmost Plot subwindow, if there is any in the PlotWindowContainer
  * \return
  */
-QMdiSubWindow* PlotWindowContainer::getPlotSubWindowFromMdi()
+QMdiSubWindow* PlotWindowContainer::getPlotSubWindowFromMdi(bool includeTable)
 {
   if (subWindowList(QMdiArea::ActivationHistoryOrder).size() == 0) {
     return 0;
   } else {
     QList<QMdiSubWindow*> subWindowsList = subWindowList(QMdiArea::ActivationHistoryOrder);
     for (int i = subWindowsList.size() - 1 ; i >= 0 ; i--) {
-      if (isPlotWindow(subWindowsList.at(i)->widget())) {
-        return subWindowsList.at(i);
+      QMdiSubWindow* window = subWindowsList.at(i);
+      if (isPlotWindow(window->widget()) || (includeTable && isResultTable(window->widget()))) {
+        return window;
       }
     }
     return 0;
@@ -188,12 +189,12 @@ AnimationWindow* PlotWindowContainer::getCurrentAnimationWindow()
  * \return
  */
 
-OutputTable* PlotWindowContainer::getCurrentResultTable()
+TableWindow* PlotWindowContainer::getCurrentResultTable()
 {
   if (subWindowList(QMdiArea::ActivationHistoryOrder).size() == 0) {
     return 0;
   } else if (isResultTable(subWindowList(QMdiArea::ActivationHistoryOrder).last()->widget())) {
-    return qobject_cast<OutputTable*>(subWindowList(QMdiArea::ActivationHistoryOrder).last()->widget());
+    return qobject_cast<TableWindow*>(subWindowList(QMdiArea::ActivationHistoryOrder).last()->widget());
   } else {
     return 0;
   }
@@ -533,15 +534,17 @@ void PlotWindowContainer::addArrayParametricPlotWindow()
 void PlotWindowContainer::addOutputTableWindow()
 {
    try {
-     OutputTable* pOutputTable = new OutputTable("", QStringList(), this, false);
-     pOutputTable->setWindowTitle(getUniqueName("Output Table : "));
-     pOutputTable->installEventFilter(this);
+     TableWindow* pTableWindow = new TableWindow("", QStringList(), this, false);
+     pTableWindow->setWindowTitle(getUniqueName("Output Table : "));
+     pTableWindow->installEventFilter(this);
      bool maximize = subWindowList().isEmpty();
-     QMdiSubWindow* pSubWindow = addSubWindow(pOutputTable);
+     QMdiSubWindow* pSubWindow = addSubWindow(pTableWindow);
+     addCloseActionsToSubWindowSystemMenu(pSubWindow);
+     addRenameTabToSubWindowSystemMenu(pSubWindow);
      pSubWindow->setWindowIcon(QIcon(":/Resources/icons/output-table-window.svg"));
-     pOutputTable->show();
+     pTableWindow->show();
      if (maximize) {
-         pOutputTable->setWindowState(Qt::WindowMaximized);
+         pTableWindow->setWindowState(Qt::WindowMaximized);
      }
    }
    catch (PlotException& e) {
@@ -642,12 +645,12 @@ void PlotWindowContainer::renamePlotWindow()
 void PlotWindowContainer::clearPlotWindow()
 {
   PlotWindow *pPlotWindow = getCurrentWindow();
-  OutputTable* pResultTable = getCurrentResultTable();
+  TableWindow* pTableWindow = getCurrentResultTable();
   if (pPlotWindow) {
      removePlotCurves(pPlotWindow);
      pPlotWindow->updatePlot();
-  } else if (pResultTable) {
-     pResultTable->clear();
+  } else if (pTableWindow) {
+      pTableWindow->clear();
   } else {
     QMessageBox::information(this, QString(Helper::applicationName).append(" - ").append(Helper::information),
                              tr("No plot window or result table is active for clearing curves."), QMessageBox::Ok);
@@ -663,9 +666,14 @@ void PlotWindowContainer::clearPlotWindow()
 void PlotWindowContainer::exportVariables()
 {
   PlotWindow *pPlotWindow = getCurrentWindow();
-  if (!pPlotWindow) {
-    QMessageBox::information(this, QString("%1 - %2").arg(Helper::applicationName, Helper::information), tr("No plot window is active for exporting variables."), QMessageBox::Ok);
+  TableWindow* pTableWindow = getCurrentResultTable();
+  if (! (pPlotWindow || pTableWindow)) {
+    QMessageBox::information(this, QString("%1 - %2").arg(Helper::applicationName, Helper::information), tr("No plot or table window is active for exporting variables."), QMessageBox::Ok);
     return;
+  }
+  if (pTableWindow) {
+      exportVariablesFromTable(pTableWindow);
+      return;
   }
   if (pPlotWindow->isPlotParametric() || pPlotWindow->isPlotArrayParametric()) {
     QMessageBox::information(this, QString("%1 - %2").arg(Helper::applicationName, Helper::information), tr("Cannot export parametric plot."), QMessageBox::Ok);
@@ -735,6 +743,56 @@ void PlotWindowContainer::exportVariables()
     MessagesWidget::instance()->addGUIMessage(MessageItem(MessageItem::Modelica, tr("Exported variables in %1").arg(fileName), Helper::scriptingKind, Helper::notificationLevel));
   }
 }
+
+void  PlotWindowContainer::exportVariablesFromTable(TableWindow* table)
+{
+    QString filePath = "";
+    QString name = QStringLiteral("exportedVariables");
+    QString fileName = StringHandler::getSaveFileName(this, QString("%1 - %2").arg(Helper::applicationName, Helper::exportVariables), NULL, "CSV Files (*.csv)", NULL, "csv", &name);
+    if (fileName.isEmpty()) { // if user press ESC
+        return;
+    }
+
+    QStringList variables = table->getModel()->getVariables();
+    QString timeVariable = table->getModel()->getTimeVariable();
+    QVector<double> timeVector = table->getModel()->getTimes();
+
+    // write the csv header
+    QStringList headers;
+    headers << QString("\"%1\"").arg(timeVariable);
+    foreach(QString variable, variables) {
+        headers << QString("\"%1\"").arg(variable);
+    }
+    // write the csv header
+    QString contents;
+    contents.append(headers.join(",")).append("\n");
+    // write csv data
+    for (int i = 0; i < timeVector.size(); ++i) {
+        QStringList data;
+        // write time data
+        data << StringHandler::number(timeVector.at(i));
+        foreach(QString variable, variables) {
+            bool valid = true;
+            double value = table->getModel()->getVariableData(variable, i, valid);
+            /*
+            OMCInterface::convertUnits_res convertUnit = MainWindow::instance()->getOMCProxy()->convertUnits(pPlotCurve->getYDisplayUnit(), pPlotCurve->getYUnit());
+            if (convertUnit.unitsCompatible) {
+                data << StringHandler::number(Utilities::convertUnit(value, convertUnit.offset, convertUnit.scaleFactor));
+            }
+            else {
+                data << StringHandler::number(value);
+            }
+            */
+            data << StringHandler::number(value);
+        }
+        contents.append(data.join(",")).append("\n");
+    }
+    // create a file
+    if (MainWindow::instance()->getLibraryWidget()->saveFile(fileName, contents)) {
+        MessagesWidget::instance()->addGUIMessage(MessageItem(MessageItem::Modelica, tr("Exported variables in %1").arg(fileName), Helper::scriptingKind, Helper::notificationLevel));
+    }
+}
+
 
 /*!
  * \brief PlotWindowContainer::updatePlotWindows

@@ -47,7 +47,7 @@ class PlotPanner;
 class PlotPicker;
 class ScaleDraw;
 class PlotCurve;
-class OutputTable;
+class TableWindow;
 
 class Plot : public QwtPlot
 {

@@ -54,14 +54,14 @@ public:
   PlotWindowContainer(QWidget *pParent = 0);
   QString getUniqueName(QString name = QString("Plot"), int number = 1);
   OMPlot::PlotWindow* getCurrentWindow();
-  QMdiSubWindow* getPlotSubWindowFromMdi();
+  QMdiSubWindow* getPlotSubWindowFromMdi(bool includeTable = false);
   OMPlot::PlotWindow* getInteractiveWindow(QString targetWindow);
 #if !defined(WITHOUT_OSG)
   AnimationWindow* getCurrentAnimationWindow();
 #endif
   QMdiSubWindow* getDiagramSubWindowFromMdi();
   DiagramWindow* getDiagramWindow() {return mpDiagramWindow;}
-  OMPlot::OutputTable* getCurrentResultTable();
+  OMPlot::TableWindow* getCurrentResultTable();
   bool isPlotWindow(QObject *pObject);
   bool isAnimationWindow(QObject *pObject);
   bool isDiagramWindow(QObject *pObject);
@@ -72,6 +72,7 @@ public:
   void showDiagramWindow(ModelWidget *pModelWidget = 0, bool initializeVisualization = false);
 private:
   void addRenameTabToSubWindowSystemMenu(QMdiSubWindow *pMdiSubWindow);
+  void exportVariablesFromTable(OMPlot::TableWindow* table);
   DiagramWindow *mpDiagramWindow;
 public slots:
   void addPlotWindow();

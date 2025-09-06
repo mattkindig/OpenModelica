@@ -43,27 +43,57 @@
 namespace OMPlot 
 {
 
+class OutputTable;
 class TableModel;
+
+class TableWindow : public QMainWindow 
+{
+	Q_OBJECT
+public:
+	TableWindow(QString filename = "", const QStringList variables = QStringList(), QWidget* parent = 0, bool interactive = false);
+	~TableWindow();
+    OutputTable* getTable() const { return mTable; }
+	TableModel* getModel() const { return mModel; }
+	void setTitle(QString title) { mTitle = title; }
+	QString getTitle() const { return mTitle;  }
+	void setInteractive(bool interactive) { mInteractive = interactive; }
+	bool isInteractive() const { return mInteractive; }
+	bool isPlot() const { return false;  }
+	bool isTable() const { return true;  }
+	void setSubWindow(QMdiSubWindow* pSubWindow) { mpSubWindow = pSubWindow; }
+	QMdiSubWindow* getSubWindow() { return mpSubWindow; }
+	void clear();
+
+signals:
+	void closingDown();
+
+private:
+	OutputTable *mTable;
+	TableModel *mModel;
+	QMdiSubWindow* mpSubWindow;
+	QString mTitle;
+	bool mInteractive;
+};
+
 
 class OutputTable : public QTableView
 {
 	Q_OBJECT
 public:
-	OutputTable(QString filename = "", const QStringList variables = QStringList(), QWidget* parent = nullptr, bool interactive = false);
+	OutputTable(QWidget* parent = nullptr);
 	~OutputTable();
 	TableModel* getModel() const { return mModel; }
-	bool isInteractive() const { return mInteractive; }
-	void clear();
+	TableWindow* getWindow() const { return mWindow; }
 private:
 	TableModel* mModel;  // associated model
-	bool mInteractive;
+	TableWindow* mWindow;  // associated parent window
 };
 
 class TableModel : public QAbstractTableModel
 {
 	Q_OBJECT
 public:
-	TableModel(QString filename = "", const QStringList variables = QStringList(), QObject * parent = nullptr);
+	TableModel(QObject *parent = nullptr);
 	~TableModel();
 	bool initializeModel(QString filename, const QStringList variables = QStringList());
 	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -78,14 +108,11 @@ public:
 	QVector<double> getTimes() const { return mTimeData;  }
 	QStringList getVariables() const { return mVariableList; }
 	QVector<double> getVariableVector(QString variableName) const { return mVariableData.value(variableName, QVector<double>()); }
-	double getVariableData(QString variableName, qsizetype timeIndex, bool* valid) const { return 0.0;  }
+	double getVariableData(QString variableName, int timeIndex, bool& valid) const;
 	bool isDefined() const;
 	QString getFilename() const { return mFile.fileName(); }
 	QString getAbsoluteFilepath() const { return mFile.absoluteFilePath(); }
 	void clearModel();
-
-signals:
-	void closingDown();
 
 private:
 	QStringList retrieveVariableDataFromFile(const QStringList variableList);
@@ -98,6 +125,10 @@ private:
 	QHash<QString, QVector<double>> mVariableData;
 	QTextStream* mpTextStream;
 };
+
+
+
+
 
 }  // namespace OMPlot
 #endif   // OUTPUT_TABLE_H

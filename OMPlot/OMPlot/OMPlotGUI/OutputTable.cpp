@@ -30,39 +30,61 @@
  */
 
 #include "OutputTable.h"
+#include "PlotWindow.h"    // for exceptions
 #include "util/read_csv.h"
 #include "util/read_matlab4.h"
 
 namespace OMPlot {
 
-
-OutputTable::OutputTable(QString filename, const QStringList variables, QWidget* parent, bool interactive) :
-	QTableView(parent), mInteractive(interactive)
+TableWindow::TableWindow(QString filename, const QStringList variables, QWidget* parent, bool interactive) 
+    : QMainWindow(parent)  
 {
+    // FOR DEBUGGING -- change initializeModel call back to 'filename' and 'variables'
     QString Filename = "C:\\Users\\mkindig.CYTEKBIO\\OneDrive - Cytek Biosciences Inc\\Documents\\OpenModelica\\LotkaVolterra\\LotkaVolterra_res.mat";
     QStringList Variables; Variables << "pred_pop" << "prey_pop" << "alpha";
 
-	mModel = new TableModel(Filename, Variables);
-	setModel(mModel);
-    // set table properties
+    // create child objects
+    mTable = new OutputTable(this);
+    mModel = new TableModel(this);
+    mTable->setModel(mModel);
+    mModel->initializeModel(Filename, Variables);
+    // set some UI properties
+    QPalette p(palette());
+    p.setColor(QPalette::Window, Qt::white);
+    setAutoFillBackground(true);
+    setPalette(p);
     setObjectName("resultTable");
+    setInteractive(interactive);
+    setCentralWidget(mTable);
+}
+
+TableWindow::~TableWindow() 
+{
+    delete mModel;
+    delete mTable;
+}
+
+void TableWindow::clear()
+{
+    getModel()->clearModel();
+    getTable()->update();
+}
+
+
+OutputTable::OutputTable(QWidget* parent) :
+	QTableView(parent)
+{
     setSortingEnabled(false);
 }
 
 OutputTable::~OutputTable()
 {
-    clear();
 }
 
-void OutputTable::clear() {
-    getModel()->clearModel();
-    update();
-}
 
-TableModel::TableModel(QString filename, const QStringList variables, QObject* parent) :
+TableModel::TableModel(QObject* parent) :
 	QAbstractTableModel(parent)
 {
-	initializeModel(filename, variables);
 }
 
 TableModel::~TableModel() {
@@ -80,7 +102,9 @@ bool TableModel::isDefined() const {
     return (!getAbsoluteFilepath().isEmpty()) && mFile.isFile();
 }
 
-
+/* Update specified variables with the data in the specified file. 
+   Returns the list of updated variables, filtering out variables that are not in file
+*/
 QStringList TableModel::updateVariableData(QString filename, const QStringList variables)
 {
     // first get new filename and modified time
@@ -351,6 +375,30 @@ void TableModel::setTimeVariable(QString timeVariable)
 	mTimeVariable = timeVariable;
 }
 
+double TableModel::getVariableData(QString variableName, int timeIndex, bool& valid) const 
+{
+    QVector<double> varData;
+    if (variableName.compare(getTimeVariable()) == 0) {
+        varData = mTimeData;
+    } else {
+        varData = mVariableData.value(variableName, QVector<double>());
+    }
+    qsizetype n = varData.size();      // n==0 if data for variable not found
+    if ( (n == 0) || (timeIndex < 0)) {     
+        valid = false;
+        return 0.0;
+    } else if (n == 1) {   // parameter
+        valid = true;
+        return varData[0];
+    } else if (timeIndex >= n) {   
+        valid = false;
+        return 0.0;
+    }  else {    // continuous data
+        valid = true;
+        return varData[timeIndex];
+    }
+}
+
 int TableModel::rowCount(const QModelIndex& parent) const 
 {
     return isDefined() ? mTimeData.size() : 100;
@@ -368,13 +416,9 @@ QVariant TableModel::data(const QModelIndex& index, int role) const
 	QVariant invalid; 
 	if (index.isValid() && (row < rowCount()) && (column < columnCount()) && isDefined()) {
 		if (role == Qt::DisplayRole) {
-            QString variableName = mVariableList[column];
-            QVector<double> data = mVariableData.value(variableName, QVector<double>() );
-            if (data.isEmpty()) { 
-                return invalid; 
-            }
-            double value = data.size() == 1 ? data[0] : data[row];
-			return QString::number(value);
+            bool valid = false;
+            double value = getVariableData(mVariableList[column], row, valid);
+            return valid ? QString::number(value) : invalid;
 		}
 		return invalid;
 	}
@@ -383,18 +427,23 @@ QVariant TableModel::data(const QModelIndex& index, int role) const
 
 
 QVariant TableModel::headerData(int section, Qt::Orientation orientation, int role) const {
+    QVariant invalid;
 	if ( (role != Qt::DisplayRole) || (! isDefined())) {
-		return QVariant();
+		return invalid;
 	}
 	if (orientation == Qt::Vertical) {
-        double value = mTimeData[section];
-        return QString::number(value);
-	}
-	else {  // orientation == Qt::Vertical
+        bool valid = false;
+        double value = getVariableData(getTimeVariable(), section, valid);
+        return valid ? QString::number(value) : invalid;
+	} else {  // orientation == Qt::Vertical
         QString variableName = mVariableList[section];
 		return variableName;
 	}
-	return QVariant();    // invalid
+	return invalid;    
 }
+
+
+
+
 
 }  // namespace OMPlot

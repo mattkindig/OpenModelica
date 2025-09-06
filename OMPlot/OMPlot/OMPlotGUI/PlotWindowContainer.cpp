@@ -74,13 +74,13 @@ PlotWindow* PlotWindowContainer::getCurrentWindow()
 
 void PlotWindowContainer::addPlotWindow(QStringList arguments)
 {
-  QWidget* pWindow = nullptr;
+  QMainWindow* pWindow = nullptr;
   if (arguments[4].compare("table", Qt::CaseInsensitive) == 0) {
-    QString filename = arguments[1];
-    QStringList variables = arguments.mid(22, -1);
-    OutputTable *pOutputTable = new OutputTable(filename, variables, this, false);
-    pOutputTable->setWindowTitle(QString(getUniqueName("Table")));
-    pWindow = qobject_cast<QWidget*>(pOutputTable);
+      QString filename = arguments[1];
+      QStringList variables = arguments.mid(22, -1);
+      TableWindow *pTableWindow = new TableWindow(filename, variables, this, false);
+      pTableWindow->setWindowTitle(QString(getUniqueName("Table")));
+      pWindow = qobject_cast<QMainWindow*>(pTableWindow);
   } else {
       PlotWindow* pPlotWindow = new PlotWindow(arguments, this);
       if (pPlotWindow->isPlot() || pPlotWindow->isPlotAll()) {
@@ -88,7 +88,7 @@ void PlotWindowContainer::addPlotWindow(QStringList arguments)
       } else {
           pPlotWindow->setWindowTitle(QString(getUniqueName()).append(" - x(y)"));
       }
-      pWindow = qobject_cast<QWidget*>(pPlotWindow);
+      pWindow = qobject_cast<QMainWindow*>(pPlotWindow);
   }
   connect(pWindow, SIGNAL(closingDown()), SLOT(checkSubWindows()));
   setActiveSubWindow(addSubWindow(pWindow));
