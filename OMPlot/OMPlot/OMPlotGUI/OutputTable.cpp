@@ -36,7 +36,7 @@
 
 namespace OMPlot {
 
-TableWindow::TableWindow(QString filename, const QStringList variables, QWidget* parent, bool interactive) 
+TableWindow::TableWindow(QString filename, const QStringList &variables, QWidget* parent, bool interactive) 
     : QMainWindow(parent)  
 {
     // FOR DEBUGGING -- change initializeModel call back to 'filename' and 'variables'
@@ -91,7 +91,7 @@ TableModel::~TableModel() {
     clearModel();
 }
 
-bool TableModel::initializeModel(QString filename, const QStringList variables)
+bool TableModel::initializeModel(QString filename, const QStringList &variables)
 {
     clearModel(); // initialize variables
     updateVariableData(filename, variables);
@@ -105,7 +105,7 @@ bool TableModel::isDefined() const {
 /* Update specified variables with the data in the specified file. 
    Returns the list of updated variables, filtering out variables that are not in file
 */
-QStringList TableModel::updateVariableData(QString filename, const QStringList variables)
+QStringList TableModel::updateVariableData(QString filename, const QStringList &variables)
 {
     // first get new filename and modified time
     QString currentFile = getAbsoluteFilepath();
@@ -121,10 +121,9 @@ QStringList TableModel::updateVariableData(QString filename, const QStringList v
         mFile = QFileInfo(filename);
     }
     QDateTime newModTime = mFile.lastModified();
-    bool useCachedData = false;
-    if ( (currentFile.compare(mFile.absoluteFilePath()) == 0) && newModTime.isValid() && (newModTime == mFileLastModified)) {
-        useCachedData = true; // file was not updated, so cached data is valid
-    } else {
+    // if filename is same and it hasn't been updated since last read, use cache
+    bool useCachedData = (currentFile.compare(mFile.absoluteFilePath()) == 0) && newModTime.isValid() && (newModTime == mFileLastModified);
+    if (! useCachedData) {
         mVariableData.clear();   // clear cache
         mFileLastModified = newModTime;
     }
@@ -159,7 +158,7 @@ QStringList TableModel::updateVariableData(QString filename, const QStringList v
     return mVariableList;
 }
 
-QStringList TableModel::retrieveVariableDataFromFile(const QStringList variableList)
+QStringList TableModel::retrieveVariableDataFromFile(const QStringList &variableList)
 {
     if (variableList.isEmpty()) {
         return QStringList(); 
@@ -399,7 +398,7 @@ double TableModel::getVariableData(QString variableName, int timeIndex, bool& va
     }
 }
 
-int TableModel::rowCount(const QModelIndex& parent) const 
+int TableModel::rowCount(const QModelIndex &parent) const 
 {
     return isDefined() ? mTimeData.size() : 100;
 }

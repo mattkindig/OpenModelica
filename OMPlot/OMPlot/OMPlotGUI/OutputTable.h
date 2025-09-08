@@ -50,7 +50,7 @@ class TableWindow : public QMainWindow
 {
 	Q_OBJECT
 public:
-	TableWindow(QString filename = "", const QStringList variables = QStringList(), QWidget* parent = 0, bool interactive = false);
+	TableWindow(QString filename = "", const QStringList &variables = QStringList(), QWidget* parent = 0, bool interactive = false);
 	~TableWindow();
     OutputTable* getTable() const { return mTable; }
 	TableModel* getModel() const { return mModel; }
@@ -95,12 +95,12 @@ class TableModel : public QAbstractTableModel
 public:
 	TableModel(QObject *parent = nullptr);
 	~TableModel();
-	bool initializeModel(QString filename, const QStringList variables = QStringList());
-	int rowCount(const QModelIndex& parent = QModelIndex()) const override;
-	int columnCount(const QModelIndex& parent = QModelIndex()) const override;
-	QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+	bool initializeModel(QString filename, const QStringList &variables = QStringList());
+	int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+	int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 	QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
-	QStringList updateVariableData(QString filename = "", const QStringList variables = QStringList());
+	QStringList updateVariableData(QString filename = "", const QStringList &variables = QStringList());
 	void setTimeVariable(QString timeVariable);
 	QString getTimeVariable() const { return mTimeVariable; }
 	void setTimeUnit(QString timeUnit) { mTimeUnit = timeUnit; }
@@ -115,7 +115,7 @@ public:
 	void clearModel();
 
 private:
-	QStringList retrieveVariableDataFromFile(const QStringList variableList);
+	QStringList retrieveVariableDataFromFile(const QStringList &variableList);
 	QFileInfo mFile;
 	QDateTime mFileLastModified;
 	QString mTimeVariable;
@@ -123,6 +123,7 @@ private:
 	QVector<double> mTimeData;
 	QStringList mVariableList;
 	QHash<QString, QVector<double>> mVariableData;
+	QHash<QString, QString> mUnits, mDisplayUnits;
 	QTextStream* mpTextStream;
 };
 
