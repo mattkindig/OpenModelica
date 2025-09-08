@@ -83,7 +83,9 @@ public:
 	OutputTable(QWidget* parent = nullptr);
 	~OutputTable();
 	TableModel* getModel() const { return mModel; }
-	TableWindow* getWindow() const { return mWindow; }
+	TableWindow* getTableWindow() const { return mWindow; }
+	bool transpose();
+
 private:
 	TableModel* mModel;  // associated model
 	TableWindow* mWindow;  // associated parent window
@@ -113,6 +115,7 @@ public:
 	QString getFilename() const { return mFile.fileName(); }
 	QString getAbsoluteFilepath() const { return mFile.absoluteFilePath(); }
 	void clearModel();
+	bool transposeModel();
 
 private:
 	QStringList retrieveVariableDataFromFile(const QStringList &variableList);
@@ -125,6 +128,7 @@ private:
 	QHash<QString, QVector<double>> mVariableData;
 	QHash<QString, QString> mUnits, mDisplayUnits;
 	QTextStream* mpTextStream;
+	bool mTimeAcrossColumns;
 };
 
 

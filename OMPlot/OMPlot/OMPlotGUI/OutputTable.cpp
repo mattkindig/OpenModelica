@@ -36,6 +36,8 @@
 
 namespace OMPlot {
 
+const int defaultTimeCount = 100, defaultVariableCount = 6;
+
 TableWindow::TableWindow(QString filename, const QStringList &variables, QWidget* parent, bool interactive) 
     : QMainWindow(parent)  
 {
@@ -81,10 +83,18 @@ OutputTable::~OutputTable()
 {
 }
 
+bool OutputTable::transpose()
+{
+    bool result = getModel()->transposeModel();
+    update();
+    return result;
+}
+
 
 TableModel::TableModel(QObject* parent) :
 	QAbstractTableModel(parent)
 {
+    mTimeAcrossColumns = true;
 }
 
 TableModel::~TableModel() {
@@ -400,12 +410,18 @@ double TableModel::getVariableData(QString variableName, int timeIndex, bool& va
 
 int TableModel::rowCount(const QModelIndex &parent) const 
 {
-    return isDefined() ? mTimeData.size() : 100;
+    if (isDefined()) {
+        return mTimeAcrossColumns ? mVariableList.size() : mTimeData.size();
+    }
+    return mTimeAcrossColumns ? defaultVariableCount : defaultTimeCount;
 }
 
 int TableModel::columnCount(const QModelIndex &parent) const
 {
-    return isDefined() ? mVariableList.size() : 6;
+    if (isDefined()) {
+        return mTimeAcrossColumns ? mTimeData.size() : mVariableList.size();
+    }
+    return mTimeAcrossColumns ? defaultTimeCount : defaultVariableCount;
 }
 
 QVariant TableModel::data(const QModelIndex& index, int role) const
@@ -414,9 +430,11 @@ QVariant TableModel::data(const QModelIndex& index, int role) const
 	int column = index.column();
 	QVariant invalid; 
 	if (index.isValid() && (row < rowCount()) && (column < columnCount()) && isDefined()) {
+        int timeIndex = mTimeAcrossColumns ? column : row;
+        int variableIndex = mTimeAcrossColumns ? row : column;
 		if (role == Qt::DisplayRole) {
             bool valid = false;
-            double value = getVariableData(mVariableList[column], row, valid);
+            double value = getVariableData(mVariableList[variableIndex], timeIndex, valid);
             return valid ? QString::number(value) : invalid;
 		}
 		return invalid;
@@ -430,18 +448,36 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation, int ro
 	if ( (role != Qt::DisplayRole) || (! isDefined())) {
 		return invalid;
 	}
-	if (orientation == Qt::Vertical) {
-        bool valid = false;
-        double value = getVariableData(getTimeVariable(), section, valid);
-        return valid ? QString::number(value) : invalid;
-	} else {  // orientation == Qt::Vertical
-        QString variableName = mVariableList[section];
-		return variableName;
-	}
+    if (mTimeAcrossColumns) {
+        if (orientation == Qt::Horizontal) {
+            bool valid = false;
+            double value = getVariableData(getTimeVariable(), section, valid);
+            return valid ? QString::number(value) : invalid;
+        }
+        else {  // orientation == Qt::Vertical
+            QString variableName = mVariableList[section];
+            return variableName;
+        }
+    } else {
+        if (orientation == Qt::Vertical) {
+            bool valid = false;
+            double value = getVariableData(getTimeVariable(), section, valid);
+            return valid ? QString::number(value) : invalid;
+        }
+        else {  // orientation == Qt::Horizontal
+            QString variableName = mVariableList[section];
+            return variableName;
+        }
+    }
 	return invalid;    
 }
 
-
+bool TableModel::transposeModel() {
+    beginResetModel();
+    mTimeAcrossColumns = !mTimeAcrossColumns;
+    endResetModel();
+    return mTimeAcrossColumns;
+}
 
 
 
