@@ -39,7 +39,7 @@ namespace OMPlot {
 const int defaultTimeCount = 100, defaultVariableCount = 6;
 
 TableWindow::TableWindow(QString filename, const QStringList &variables, QWidget* parent, bool interactive) 
-    : QMainWindow(parent)  
+    : ResultWindow(parent)
 {
     // FOR DEBUGGING -- change initializeModel call back to 'filename' and 'variables'
     QString Filename = "C:\\Users\\mkindig.CYTEKBIO\\OneDrive - Cytek Biosciences Inc\\Documents\\OpenModelica\\LotkaVolterra\\LotkaVolterra_res.mat";
@@ -55,7 +55,7 @@ TableWindow::TableWindow(QString filename, const QStringList &variables, QWidget
     p.setColor(QPalette::Window, Qt::white);
     setAutoFillBackground(true);
     setPalette(p);
-    setObjectName("resultTable");
+    setObjectName("tableWindow");
     setInteractive(interactive);
     setCentralWidget(mTable);
 }
@@ -72,6 +72,10 @@ void TableWindow::clear()
     getTable()->update();
 }
 
+void TableWindow::receiveMessage(QStringList arguments) 
+{
+    return;
+}
 
 OutputTable::OutputTable(QWidget* parent) :
 	QTableView(parent)

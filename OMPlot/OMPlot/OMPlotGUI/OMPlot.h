@@ -36,6 +36,7 @@
 
 #include <QList>
 #include <QColor>
+#include <QMainWindow>
 
 namespace OMPlot
 {
@@ -48,6 +49,7 @@ class PlotPicker;
 class ScaleDraw;
 class PlotCurve;
 class TableWindow;
+class ResultWindow; // parent class of PlotWindow and TableWindow
 
 class Plot : public QwtPlot
 {
@@ -91,6 +93,9 @@ public:
 public slots:
   virtual void replot();
 };
+
+
+
 }
 
 #endif // OMPLOT_H

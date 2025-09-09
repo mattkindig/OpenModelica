@@ -63,12 +63,12 @@ QString PlotWindowContainer::getUniqueName(QString name, int number)
   return newName;
 }
 
-PlotWindow* PlotWindowContainer::getCurrentWindow()
+ResultWindow* PlotWindowContainer::getCurrentWindow()
 {
   if (subWindowList(QMdiArea::ActivationHistoryOrder).size() == 0) {
     return 0;
   } else {
-    return qobject_cast<PlotWindow*>(subWindowList(QMdiArea::ActivationHistoryOrder).last()->widget());
+    return qobject_cast<ResultWindow*>(subWindowList(QMdiArea::ActivationHistoryOrder).last()->widget());
   }
 }
 

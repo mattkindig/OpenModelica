@@ -70,7 +70,7 @@
 using namespace OMPlot;
 
 PlotWindow::PlotWindow(QStringList arguments, QWidget *parent, bool isInteractiveSimulation, int toolbarIconSize)
-  : QMainWindow(parent), mIsInteractiveSimulation(isInteractiveSimulation)
+  : ResultWindow(parent), mIsInteractiveSimulation(isInteractiveSimulation)
 {
   /* set the widget background white. so that the plot is more useable in books and publications. */
   QPalette p(palette());

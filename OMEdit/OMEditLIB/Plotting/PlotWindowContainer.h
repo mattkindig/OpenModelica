@@ -53,7 +53,7 @@ class PlotWindowContainer : public QMdiArea
 public:
   PlotWindowContainer(QWidget *pParent = 0);
   QString getUniqueName(QString name = QString("Plot"), int number = 1);
-  OMPlot::PlotWindow* getCurrentWindow();
+  OMPlot::ResultWindow* getCurrentWindow();
   QMdiSubWindow* getPlotSubWindowFromMdi(bool includeTable = false);
   OMPlot::PlotWindow* getInteractiveWindow(QString targetWindow);
 #if !defined(WITHOUT_OSG)
@@ -61,11 +61,12 @@ public:
 #endif
   QMdiSubWindow* getDiagramSubWindowFromMdi();
   DiagramWindow* getDiagramWindow() {return mpDiagramWindow;}
-  OMPlot::TableWindow* getCurrentResultTable();
+  OMPlot::TableWindow* getCurrentTableWindow();
   bool isPlotWindow(QObject *pObject);
   bool isAnimationWindow(QObject *pObject);
   bool isDiagramWindow(QObject *pObject);
-  bool isResultTable(QObject* pObject);
+  bool isTableWindow(QObject* pObject);
+  bool isResultWindow(QObject* pObject);
   bool isUniqueName(QString name);
   bool eventFilter(QObject *pObject, QEvent *pEvent);
   void removePlotCurves(OMPlot::PlotWindow *pPlotWindow);
@@ -79,7 +80,7 @@ public slots:
   void addParametricPlotWindow();
   void addArrayPlotWindow();
   void addArrayParametricPlotWindow();
-  void addOutputTableWindow();
+  void addTableWindow();
   OMPlot::PlotWindow* addInteractivePlotWindow(QString owner = QString(), int port = 0);
   void addAnimationWindow();
   void addDiagramWindow(ModelWidget *pModelWidget = 0);

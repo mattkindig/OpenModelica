@@ -1979,7 +1979,7 @@ void VariablesWidget::plotVariables(const QModelIndex &index, qreal curveThickne
     if (!pVariablesTreeItem->isMainArray() && (!pPlotWindow || pPlotWindow->isPlotArray() || pPlotWindow->isPlotArrayParametric())) {
       bool checkedState = pVariablesTreeItem->isChecked();
       MainWindow::instance()->getPlotWindowContainer()->addPlotWindow();
-      pPlotWindow = MainWindow::instance()->getPlotWindowContainer()->getCurrentWindow();
+      pPlotWindow = qobject_cast<PlotWindow*>(MainWindow::instance()->getPlotWindowContainer()->getCurrentWindow());
       checkVariable(index, checkedState);
     }
     // if the variable is an array and
@@ -1988,7 +1988,7 @@ void VariablesWidget::plotVariables(const QModelIndex &index, qreal curveThickne
     else if (pVariablesTreeItem->isMainArray() && (!pPlotWindow || pPlotWindow->isPlot() || pPlotWindow->isPlotParametric())) {
       bool checkedState = pVariablesTreeItem->isChecked();
       MainWindow::instance()->getPlotWindowContainer()->addArrayPlotWindow();
-      pPlotWindow = MainWindow::instance()->getPlotWindowContainer()->getCurrentWindow();
+      pPlotWindow = qobject_cast<PlotWindow*>(MainWindow::instance()->getPlotWindowContainer()->getCurrentWindow());
       checkVariable(index, checkedState);
     }
     // if still pPlotWindow is 0 then return.
@@ -2322,7 +2322,7 @@ void VariablesWidget::unitChanged(const QModelIndex &index)
     return;
   }
   try {
-    OMPlot::PlotWindow *pPlotWindow = MainWindow::instance()->getPlotWindowContainer()->getCurrentWindow();
+    OMPlot::PlotWindow *pPlotWindow = qobject_cast<PlotWindow*>(MainWindow::instance()->getPlotWindowContainer()->getCurrentWindow());
     // if still pPlotWindow is 0 then return.
     if (!pPlotWindow) {
       return;
@@ -2509,7 +2509,7 @@ void VariablesWidget::valueEntered(const QModelIndex &index)
     return;
   }
   try {
-    OMPlot::PlotWindow *pPlotWindow = MainWindow::instance()->getPlotWindowContainer()->getCurrentWindow();
+    OMPlot::PlotWindow *pPlotWindow = qobject_cast<PlotWindow*>(MainWindow::instance()->getPlotWindowContainer()->getCurrentWindow());
     // if still pPlotWindow is 0 then return.
     if (!pPlotWindow) {
       return;
@@ -2769,7 +2769,7 @@ void VariablesWidget::timeUnitChanged(int index)
     return;
   }
   try {
-    OMPlot::PlotWindow *pPlotWindow = MainWindow::instance()->getPlotWindowContainer()->getCurrentWindow();
+    OMPlot::PlotWindow *pPlotWindow = qobject_cast<PlotWindow*>(MainWindow::instance()->getPlotWindowContainer()->getCurrentWindow());
     // if still pPlotWindow is 0 then return.
     if (!pPlotWindow) {
       return;

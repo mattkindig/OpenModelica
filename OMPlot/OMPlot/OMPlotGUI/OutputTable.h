@@ -33,7 +33,8 @@
 #define OUTPUT_TABLE_H
 
 #include "OMPlot.h"
-#include "PlotWindowContainer.h"
+#include "PlotWindowContainer.h"  // for ResultWindow
+#include "OutputTable.h"
 
 #include <QAbstractTableModel>
 #include <QTableView>
@@ -46,7 +47,7 @@ namespace OMPlot
 class OutputTable;
 class TableModel;
 
-class TableWindow : public QMainWindow 
+class TableWindow : public ResultWindow
 {
 	Q_OBJECT
 public:
@@ -58,11 +59,12 @@ public:
 	QString getTitle() const { return mTitle;  }
 	void setInteractive(bool interactive) { mInteractive = interactive; }
 	bool isInteractive() const { return mInteractive; }
-	bool isPlot() const { return false;  }
-	bool isTable() const { return true;  }
+	bool isPlotWindow() const { return false; }
+	bool isTableWindow() const { return true; }
 	void setSubWindow(QMdiSubWindow* pSubWindow) { mpSubWindow = pSubWindow; }
 	QMdiSubWindow* getSubWindow() { return mpSubWindow; }
 	void clear();
+	void receiveMessage(QStringList arguments);
 
 signals:
 	void closingDown();

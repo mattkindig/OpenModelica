@@ -2671,7 +2671,7 @@ void OptionsDialog::savePlottingSettings()
   } else {
     mpSettings->setValue("plotting/viewmode", plottingViewMode);
     MainWindow::instance()->getPlotWindowContainer()->setViewMode(QMdiArea::SubWindowView);
-    OMPlot::PlotWindow *pPlotWindow = MainWindow::instance()->getPlotWindowContainer()->getCurrentWindow();
+    OMPlot::PlotWindow *pPlotWindow = static_cast<OMPlot::PlotWindow*>(MainWindow::instance()->getPlotWindowContainer()->getCurrentWindow());
     if (pPlotWindow) {
       pPlotWindow->show();
       pPlotWindow->setWindowState(Qt::WindowMaximized);

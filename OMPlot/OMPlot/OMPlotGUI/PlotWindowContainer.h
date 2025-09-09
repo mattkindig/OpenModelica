@@ -49,7 +49,7 @@ public:
 
   PlotMainWindow* getPlotMainWindow();
   QString getUniqueName(QString name = QString("Plot"), int number = 1);
-  PlotWindow* getCurrentWindow();
+  ResultWindow* getCurrentWindow();
 private:
   PlotMainWindow *mpPlotMainWindow;
 public slots:

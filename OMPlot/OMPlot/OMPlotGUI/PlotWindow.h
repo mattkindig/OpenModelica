@@ -69,9 +69,20 @@ namespace OMPlot
 {
 class Plot;
 class PlotCurve;
-class OutputTable;
 
-class PlotWindow : public QMainWindow
+class ResultWindow : public QMainWindow {
+	// parent to PlotWindow and TableWindow
+	Q_OBJECT
+public:
+	ResultWindow(QWidget* parent) : QMainWindow(parent) { setObjectName("resultWindow"); }
+	bool isResultWindow() const { return true; }
+	virtual bool isPlotWindow() const = 0;
+	virtual bool isTableWindow() const = 0;
+	virtual void receiveMessage(QStringList arguments) = 0;
+};
+
+
+class PlotWindow : public ResultWindow
 {
 	Q_OBJECT
 public:
@@ -131,13 +142,14 @@ public:
 	void initializePlot(QStringList arguments);
 	void setVariablesList(QStringList variables);
 	void setPlotType(PlotType type);
+	bool isPlotWindow() const { return true; }
+	bool isTableWindow() const { return false; }
 	bool isPlot() const { return mPlotType == PlotWindow::PLOT; }
 	bool isPlotAll() const { return mPlotType == PlotWindow::PLOTALL; }
 	bool isPlotParametric() const { return mPlotType == PlotWindow::PLOTPARAMETRIC; }
 	bool isPlotInteractive() const { return mPlotType == PlotWindow::PLOTINTERACTIVE; }
 	bool isPlotArray() const { return mPlotType == PlotWindow::PLOTARRAY; }
 	bool isPlotArrayParametric() const { return mPlotType == PlotWindow::PLOTARRAYPARAMETRIC; }
-	bool isTable() const { return false; }
 	PlotType getPlotType() const { return mPlotType; }
 	void initializeFile(QString file);
 	void getStartStopTime(double& start, double& stop);

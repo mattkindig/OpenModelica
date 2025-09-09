@@ -109,16 +109,16 @@ bool PlotWindowContainer::isUniqueName(QString name)
 
 /*!
  * \brief PlotWindowContainer::getCurrentWindow
- * Returns the current plot window, if the last window is animation, return null
+ * Returns the current plot or table window, if the last window is animation, return null
  * \return
  */
-PlotWindow* PlotWindowContainer::getCurrentWindow()
+ResultWindow* PlotWindowContainer::getCurrentWindow()
 {
   if (subWindowList(QMdiArea::ActivationHistoryOrder).size() == 0) {
     return 0;
   } else {
-    if (isPlotWindow(subWindowList(QMdiArea::ActivationHistoryOrder).last()->widget())) {
-      return qobject_cast<PlotWindow*>(subWindowList(QMdiArea::ActivationHistoryOrder).last()->widget());
+    if (isResultWindow(subWindowList(QMdiArea::ActivationHistoryOrder).last()->widget())) {
+      return qobject_cast<ResultWindow*>(subWindowList(QMdiArea::ActivationHistoryOrder).last()->widget());
     } else {
       return 0;
     }
@@ -138,7 +138,7 @@ QMdiSubWindow* PlotWindowContainer::getPlotSubWindowFromMdi(bool includeTable)
     QList<QMdiSubWindow*> subWindowsList = subWindowList(QMdiArea::ActivationHistoryOrder);
     for (int i = subWindowsList.size() - 1 ; i >= 0 ; i--) {
       QMdiSubWindow* window = subWindowsList.at(i);
-      if (isPlotWindow(window->widget()) || (includeTable && isResultTable(window->widget()))) {
+      if (isPlotWindow(window->widget()) || (includeTable && isTableWindow(window->widget()))) {
         return window;
       }
     }
@@ -184,16 +184,16 @@ AnimationWindow* PlotWindowContainer::getCurrentAnimationWindow()
 #endif
 
 /*!
- * \brief PlotWindowContainer::getCurrentResultTable
- * Returns the current results table, if the last window is not a table, return null
+ * \brief PlotWindowContainer::getCurrentTableWindow
+ * Returns the current table window, if the last window is not a table, return null
  * \return
  */
 
-TableWindow* PlotWindowContainer::getCurrentResultTable()
+TableWindow* PlotWindowContainer::getCurrentTableWindow()
 {
   if (subWindowList(QMdiArea::ActivationHistoryOrder).size() == 0) {
     return 0;
-  } else if (isResultTable(subWindowList(QMdiArea::ActivationHistoryOrder).last()->widget())) {
+  } else if (isTableWindow(subWindowList(QMdiArea::ActivationHistoryOrder).last()->widget())) {
     return qobject_cast<TableWindow*>(subWindowList(QMdiArea::ActivationHistoryOrder).last()->widget());
   } else {
     return 0;
@@ -263,17 +263,25 @@ bool PlotWindowContainer::isDiagramWindow(QObject *pObject)
 }
 
 /*!
- * \brief PlotWindowContainer::isResultTable
- * Returns true if pObject is a ResultTable.
+ * \brief PlotWindowContainer::isTableWindow
+ * Returns true if pObject is a TableWindow.
  * \param pObject
  * \return
  */
-bool PlotWindowContainer::isResultTable(QObject* pObject)
+bool PlotWindowContainer::isTableWindow(QObject* pObject)
 {
-  if (pObject && 0 == pObject->objectName().compare("resultTable")) {
+  if (pObject && 0 == pObject->objectName().compare("tableWindow")) {
      return true;
   }
   return false;
+}
+
+bool PlotWindowContainer::isResultWindow(QObject* pObject)
+{
+    if (pObject && 0 == pObject->objectName().compare("resultWindow")) {
+        return true;
+    }
+    return false;
 }
 
 
@@ -531,11 +539,11 @@ void PlotWindowContainer::addArrayParametricPlotWindow()
   }
 }
 
-void PlotWindowContainer::addOutputTableWindow()
+void PlotWindowContainer::addTableWindow()
 {
    try {
      TableWindow* pTableWindow = new TableWindow("", QStringList(), this, false);
-     pTableWindow->setWindowTitle(getUniqueName("Output Table : "));
+     pTableWindow->setWindowTitle(getUniqueName("Table : "));
      pTableWindow->installEventFilter(this);
      bool maximize = subWindowList().isEmpty();
      QMdiSubWindow* pSubWindow = addSubWindow(pTableWindow);
@@ -640,16 +648,17 @@ void PlotWindowContainer::renamePlotWindow()
 
 /*!
  * \brief PlotWindowContainer::clearPlotWindow
- * Clears the plot window or result table, if the active window
+ * Clears the plot or table, if the active window
  */
 void PlotWindowContainer::clearPlotWindow()
 {
-  PlotWindow *pPlotWindow = getCurrentWindow();
-  TableWindow* pTableWindow = getCurrentResultTable();
-  if (pPlotWindow) {
+  ResultWindow *pWindow = getCurrentWindow();
+  if (pWindow && pWindow->isPlotWindow()) {
+     PlotWindow* pPlotWindow = static_cast<PlotWindow*>(pWindow);
      removePlotCurves(pPlotWindow);
      pPlotWindow->updatePlot();
-  } else if (pTableWindow) {
+  } else if (pWindow && pWindow->isTableWindow()) {
+      TableWindow* pTableWindow = static_cast<TableWindow*>(pWindow);
       pTableWindow->clear();
   } else {
     QMessageBox::information(this, QString(Helper::applicationName).append(" - ").append(Helper::information),
@@ -665,11 +674,20 @@ void PlotWindowContainer::clearPlotWindow()
  */
 void PlotWindowContainer::exportVariables()
 {
-  PlotWindow *pPlotWindow = getCurrentWindow();
-  TableWindow* pTableWindow = getCurrentResultTable();
-  if (! (pPlotWindow || pTableWindow)) {
+  ResultWindow *pWindow = getCurrentWindow();
+  PlotWindow* pPlotWindow = nullptr;
+  TableWindow* pTableWindow = nullptr;
+  if (pWindow && pWindow->isPlotWindow()) {
+      pPlotWindow = static_cast<PlotWindow*>(pWindow);
+  } else if (pWindow && pWindow->isTableWindow()) {
+      pTableWindow = static_cast<TableWindow*>(pWindow);
+  } else {
     QMessageBox::information(this, QString("%1 - %2").arg(Helper::applicationName, Helper::information), tr("No plot or table window is active for exporting variables."), QMessageBox::Ok);
     return;
+  }
+  if ( (pPlotWindow && pPlotWindow->getPlot()->getPlotCurvesList().isEmpty()) || (pTableWindow && pTableWindow->getModel()->getVariables().isEmpty())) {
+      QMessageBox::information(this, QString("%1 - %2").arg(Helper::applicationName, Helper::information), tr("No variables are selected for exporting."), QMessageBox::Ok);
+      return;
   }
   if (pTableWindow) {
       exportVariablesFromTable(pTableWindow);
@@ -679,10 +697,7 @@ void PlotWindowContainer::exportVariables()
     QMessageBox::information(this, QString("%1 - %2").arg(Helper::applicationName, Helper::information), tr("Cannot export parametric plot."), QMessageBox::Ok);
     return;
   }
-  if (pPlotWindow->getPlot()->getPlotCurvesList().isEmpty()) {
-    QMessageBox::information(this, QString("%1 - %2").arg(Helper::applicationName, Helper::information), tr("No variables are selected for exporting."), QMessageBox::Ok);
-    return;
-  }
+  
 
   QString filePath = "";
   QwtArray<double> timeVector;
