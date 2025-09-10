@@ -36,7 +36,7 @@
 
 namespace OMPlot {
 
-const int defaultTimeCount = 100, defaultVariableCount = 6;
+static const int defaultTimeCount = 100, defaultVariableCount = 6;
 
 TableWindow::TableWindow(QString filename, const QStringList &variables, QWidget* parent, bool interactive) 
     : ResultWindow(parent)
