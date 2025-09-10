@@ -33,8 +33,7 @@
 #define PLOTWINDOWCONTAINER_H
 
 #include "PlotMainWindow.h"
-#include "PlotWindow.h"
-#include "OutputTable.h"
+#include "PlotWindow.h"  // for ResultWindow
 
 #include <QMdiArea>
 

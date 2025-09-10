@@ -39,6 +39,7 @@
 #include "Modeling/MessagesWidget.h"
 #include "Plotting/VariablesWidget.h"
 #include "Plotting/DiagramWindow.h"
+#include "PlotWindow.h"
 #include "PlotCurve.h"
 #include "OutputTable.h"
 
@@ -278,10 +279,7 @@ bool PlotWindowContainer::isTableWindow(QObject* pObject)
 
 bool PlotWindowContainer::isResultWindow(QObject* pObject)
 {
-    if (pObject && 0 == pObject->objectName().compare("resultWindow")) {
-        return true;
-    }
-    return false;
+    return PlotWindowContainer::isPlotWindow(pObject) || PlotWindowContainer::isTableWindow(pObject);
 }
 
 
@@ -654,12 +652,12 @@ void PlotWindowContainer::clearPlotWindow()
 {
   ResultWindow *pWindow = getCurrentWindow();
   if (pWindow && pWindow->isPlotWindow()) {
-     PlotWindow* pPlotWindow = static_cast<PlotWindow*>(pWindow);
+     PlotWindow* pPlotWindow = qobject_cast<PlotWindow*>(pWindow);
      removePlotCurves(pPlotWindow);
      pPlotWindow->updatePlot();
   } else if (pWindow && pWindow->isTableWindow()) {
-      TableWindow* pTableWindow = static_cast<TableWindow*>(pWindow);
-      pTableWindow->clear();
+     TableWindow* pTableWindow = qobject_cast<TableWindow*>(pWindow);
+     pTableWindow->clear();
   } else {
     QMessageBox::information(this, QString(Helper::applicationName).append(" - ").append(Helper::information),
                              tr("No plot window or result table is active for clearing curves."), QMessageBox::Ok);
@@ -678,9 +676,9 @@ void PlotWindowContainer::exportVariables()
   PlotWindow* pPlotWindow = nullptr;
   TableWindow* pTableWindow = nullptr;
   if (pWindow && pWindow->isPlotWindow()) {
-      pPlotWindow = static_cast<PlotWindow*>(pWindow);
+      pPlotWindow = qobject_cast<PlotWindow*>(pWindow);
   } else if (pWindow && pWindow->isTableWindow()) {
-      pTableWindow = static_cast<TableWindow*>(pWindow);
+      pTableWindow = qobject_cast<TableWindow*>(pWindow);
   } else {
     QMessageBox::information(this, QString("%1 - %2").arg(Helper::applicationName, Helper::information), tr("No plot or table window is active for exporting variables."), QMessageBox::Ok);
     return;
@@ -759,7 +757,7 @@ void PlotWindowContainer::exportVariables()
   }
 }
 
-void  PlotWindowContainer::exportVariablesFromTable(TableWindow* table)
+void PlotWindowContainer::exportVariablesFromTable(TableWindow* table)
 {
     QString filePath = "";
     QString name = QStringLiteral("exportedVariables");

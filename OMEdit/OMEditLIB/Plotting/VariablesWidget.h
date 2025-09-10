@@ -268,7 +268,7 @@ private:
   void unCheckCurveVariable(const QString &variable);
   void updateDisplayUnitAndValue(const QString &unitPrefix, const QString &displayUnit, VariablesTreeItem *pVariablesTreeItem);
 public slots:
-  void plotVariables(const QModelIndex &index, qreal curveThickness, int curveStyle, bool shiftKey, OMPlot::PlotCurve *pPlotCurve = 0, OMPlot::PlotWindow *pPlotWindow = 0);
+  void plotVariables(const QModelIndex &index, qreal curveThickness, int curveStyle, bool shiftKey, OMPlot::PlotCurve *pPlotCurve = 0, OMPlot::ResultWindow *pWindow = 0);
   void unitChanged(const QModelIndex &index);
   void updatePlottedVariablesDisplayUnitAndValue();
   void simulationTimeChanged(int value);

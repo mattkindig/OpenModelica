@@ -69,12 +69,14 @@ namespace OMPlot
 {
 class Plot;
 class PlotCurve;
+class TableWindow;
 
-class ResultWindow : public QMainWindow {
-	// parent to PlotWindow and TableWindow
+// parent to PlotWindow and TableWindow
+class ResultWindow : public QMainWindow 
+{
 	Q_OBJECT
 public:
-	ResultWindow(QWidget* parent) : QMainWindow(parent) { setObjectName("resultWindow"); }
+	ResultWindow(QWidget* parent) : QMainWindow(parent) { }
 	bool isResultWindow() const { return true; }
 	virtual bool isPlotWindow() const = 0;
 	virtual bool isTableWindow() const = 0;

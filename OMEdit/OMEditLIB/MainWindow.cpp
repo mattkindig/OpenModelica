@@ -1621,7 +1621,7 @@ void MainWindow::PlotCallbackFunction(void *p, int externalWindow, const char* f
     QFileInfo fileInfo(filename);
     pMainWindow->openResultFile(filename);
     if (!fileInfo.exists()) return;
-    OMPlot::PlotWindow *pPlotWindow = static_cast<OMPlot::PlotWindow*>(pMainWindow->getPlotWindowContainer()->getCurrentWindow());
+    OMPlot::PlotWindow *pPlotWindow = qobject_cast<OMPlot::PlotWindow*>(pMainWindow->getPlotWindowContainer()->getCurrentWindow());
     if (pPlotWindow && !externalWindow) {
       if (pPlotWindow->isPlot() && strcmp(plotType, "plotparametric") == 0) {
         pMainWindow->getPlotWindowContainer()->addParametricPlotWindow();
@@ -1636,7 +1636,7 @@ void MainWindow::PlotCallbackFunction(void *p, int externalWindow, const char* f
       }
     }
     // get the current window again and set plot arguments on it
-    pPlotWindow = static_cast<OMPlot::PlotWindow*>(pMainWindow->getPlotWindowContainer()->getCurrentWindow());
+    pPlotWindow = qobject_cast<OMPlot::PlotWindow*>(pMainWindow->getPlotWindowContainer()->getCurrentWindow());
     pPlotWindow->setTitle(QString(title));
     pPlotWindow->setGrid(QString(grid));
     if (QString(logX) == "true") {

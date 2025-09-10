@@ -29,12 +29,11 @@
  *
  */
 
-#ifndef OUTPUT_TABLE_H
-#define OUTPUT_TABLE_H
+#ifndef OUTPUTTABLE_H
+#define OUTPUTTABLE_H
 
 #include "OMPlot.h"
 #include "PlotWindowContainer.h"  // for ResultWindow
-#include "OutputTable.h"
 
 #include <QAbstractTableModel>
 #include <QTableView>
@@ -133,9 +132,5 @@ private:
 	bool mTimeAcrossColumns;
 };
 
-
-
-
-
 }  // namespace OMPlot
-#endif   // OUTPUT_TABLE_H
+#endif   // OUTPUTTABLE_H

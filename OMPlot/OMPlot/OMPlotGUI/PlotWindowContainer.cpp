@@ -30,6 +30,7 @@
  */
 
 #include "PlotWindowContainer.h"
+#include "OutputTable.h"
 
 using namespace OMPlot;
 
@@ -102,8 +103,11 @@ void PlotWindowContainer::addPlotWindow(QStringList arguments)
 
 void PlotWindowContainer::updateCurrentWindow(QStringList arguments)
 {
-  getCurrentWindow()->receiveMessage(arguments);
-  getPlotMainWindow()->activateWindow();
+  ResultWindow* pWindow = getCurrentWindow();
+  if (pWindow) {
+      pWindow->receiveMessage(arguments);
+      getPlotMainWindow()->activateWindow();
+  }
 }
 
 void PlotWindowContainer::checkSubWindows()

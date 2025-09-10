@@ -42,6 +42,7 @@
 #include "PlotGrid.h"
 #include "LogScaleEngine.h"
 #include "LinearScaleEngine.h"
+#include "OutputTable.h"
 
 #include "qwt_plot_layout.h"
 #include "qwt_text.h"

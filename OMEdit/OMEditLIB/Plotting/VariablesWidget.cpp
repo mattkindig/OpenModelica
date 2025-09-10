@@ -46,6 +46,7 @@
 #include "Simulation/SimulationOutputWidget.h"
 #include "TransformationalDebugger/TransformationsWidget.h"
 #include "PlotCurve.h"
+#include "OutputTable.h"
 
 #include <QObject>
 #include <QDockWidget>
@@ -1947,7 +1948,7 @@ QPair<double, bool> VariablesWidget::readVariableValue(QString variable, double 
  * \param pPlotCurve
  * \param pPlotWindow
  */
-void VariablesWidget::plotVariables(const QModelIndex &index, qreal curveThickness, int curveStyle, bool shiftKey, PlotCurve *pPlotCurve, PlotWindow *pPlotWindow)
+void VariablesWidget::plotVariables(const QModelIndex &index, qreal curveThickness, int curveStyle, bool shiftKey, PlotCurve *pPlotCurve, ResultWindow *pResultWindow)
 {
   if (index.column() > 0) {
     return;
@@ -1957,11 +1958,11 @@ void VariablesWidget::plotVariables(const QModelIndex &index, qreal curveThickne
     return;
   }
   try {
-    // if pPlotWindow is 0 then get the current window.
-    if (!pPlotWindow) {
-      QMdiSubWindow *pSubWindow = MainWindow::instance()->getPlotWindowContainer()->getPlotSubWindowFromMdi();
-      if (pSubWindow) {
-        pPlotWindow = qobject_cast<PlotWindow*>(pSubWindow->widget());
+    // if pResultWindow is 0 then get the current window.
+    if (!pResultWindow) {
+      QMdiSubWindow *pSubWindow = MainWindow::instance()->getPlotWindowContainer()->getPlotSubWindowFromMdi(false);
+      if (pSubWindow && PlotWindowContainer::isResultWindow(pSubWindow->widget())) {
+        pResultWindow = qobject_cast<ResultWindow*>(pSubWindow->widget());
         /* Since we change the active subwindow so the variable check state might change after call to setActiveSubWindow
          * So we store the check state and apply it back after setActiveSubWindow.
          * This is done to fix issue #12911.
@@ -1973,6 +1974,10 @@ void VariablesWidget::plotVariables(const QModelIndex &index, qreal curveThickne
         pVariablesTreeItem->setChecked(checkState);
       }
     }
+    PlotWindow* pPlotWindow = nullptr;
+    TableWindow* pTableWindow = nullptr;
+    if (pResultWindow->isPlotWindow()) { pPlotWindow = qobject_cast<PlotWindow*>(pResultWindow); }
+    if (pResultWindow->isTableWindow()) { pTableWindow = qobject_cast<TableWindow*>(pResultWindow); }
     // if the variable is not an array and
     // pPlotWindow is 0 or the plot's type is PLOTARRAY or PLOTARRAYPARAMETRIC
     // then create a new plot window.

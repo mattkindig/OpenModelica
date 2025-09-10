@@ -62,11 +62,11 @@ public:
   QMdiSubWindow* getDiagramSubWindowFromMdi();
   DiagramWindow* getDiagramWindow() {return mpDiagramWindow;}
   OMPlot::TableWindow* getCurrentTableWindow();
-  bool isPlotWindow(QObject *pObject);
-  bool isAnimationWindow(QObject *pObject);
-  bool isDiagramWindow(QObject *pObject);
-  bool isTableWindow(QObject* pObject);
-  bool isResultWindow(QObject* pObject);
+  static bool isPlotWindow(QObject *pObject);
+  static bool isAnimationWindow(QObject *pObject);
+  static bool isDiagramWindow(QObject *pObject);
+  static bool isTableWindow(QObject* pObject);
+  static bool isResultWindow(QObject* pObject);
   bool isUniqueName(QString name);
   bool eventFilter(QObject *pObject, QEvent *pEvent);
   void removePlotCurves(OMPlot::PlotWindow *pPlotWindow);

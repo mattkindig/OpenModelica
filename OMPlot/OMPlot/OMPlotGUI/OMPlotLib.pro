@@ -32,7 +32,8 @@ SOURCES += Plot.cpp \
   PlotMainWindow.cpp \
   ScaleDraw.cpp \
   LogScaleEngine.cpp \
-  LinearScaleEngine.cpp
+  LinearScaleEngine.cpp \
+  OutputTable.cpp
 
 HEADERS  += OMPlot.h \
   PlotZoomer.h \
@@ -47,7 +48,8 @@ HEADERS  += OMPlot.h \
   PlotMainWindow.h \
   ScaleDraw.h \
   LogScaleEngine.h \
-  LinearScaleEngine.h
+  LinearScaleEngine.h \
+  OutputTable.h
 
 win32 {
   _cxx = $$(CXX)
