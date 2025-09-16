@@ -66,7 +66,7 @@ class TableModel : public QAbstractTableModel
 {
 	Q_OBJECT
 public:
-	TableModel(QObject *parent = nullptr);
+	TableModel(QObject *parent = nullptr, OutputTable* table = nullptr);
 	~TableModel();
 	bool initializeModel(QString filename, const QStringList &variables = QStringList());
 	void setTable(OutputTable* table) { mpTable = table; }
@@ -87,14 +87,14 @@ public:
 	bool addVariable(QString variableName);
 	bool removeVariable(QString variableName);
 	bool isDefined() const;
-	QString getFilename() const { return mFilename; }
-	QString getAbsoluteFilepath() const { return isDefined() ? mFilename : QString(""); }
+	QString getFilename() const {  return isDefined() ? mFile.fileName() : QString(""); }
+	QString getAbsoluteFilePath() const { return isDefined() ? mFile.absoluteFilePath() : QString(""); }
 	void clearModel();
 	bool transposeModel();
 
 private:
 	QStringList updateVariableDataFromFile(QString filename, const QStringList &variableList);
-	QString mFilename;
+	QFileInfo mFile;
 	QDateTime mFileLastModified;
 	QString mTimeVariable;
 	QString mTimeUnit;
