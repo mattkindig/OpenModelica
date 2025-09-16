@@ -78,7 +78,7 @@ void PlotWindowContainer::addPlotWindow(QStringList arguments)
   QMainWindow* pWindow = nullptr;
   if (arguments[4].compare("table", Qt::CaseInsensitive) == 0) {
       QString filename = arguments[1];
-      QStringList variables = arguments.mid(22, -1);
+      QStringList variables = arguments.mid(18, -1);
       TableWindow *pTableWindow = new TableWindow(filename, variables, this, false);
       pTableWindow->setWindowTitle(QString(getUniqueName("Table")));
       pWindow = qobject_cast<QMainWindow*>(pTableWindow);

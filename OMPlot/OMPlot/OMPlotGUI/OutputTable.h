@@ -43,45 +43,15 @@
 namespace OMPlot 
 {
 
+class TableWindow;
 class OutputTable;
 class TableModel;
-
-class TableWindow : public ResultWindow
-{
-	Q_OBJECT
-public:
-	TableWindow(QString filename = "", const QStringList &variables = QStringList(), QWidget* parent = 0, bool interactive = false);
-	~TableWindow();
-    OutputTable* getTable() const { return mTable; }
-	TableModel* getModel() const { return mModel; }
-	void setTitle(QString title) { mTitle = title; }
-	QString getTitle() const { return mTitle;  }
-	void setInteractive(bool interactive) { mInteractive = interactive; }
-	bool isInteractive() const { return mInteractive; }
-	bool isPlotWindow() const { return false; }
-	bool isTableWindow() const { return true; }
-	void setSubWindow(QMdiSubWindow* pSubWindow) { mpSubWindow = pSubWindow; }
-	QMdiSubWindow* getSubWindow() { return mpSubWindow; }
-	void clear();
-	void receiveMessage(QStringList arguments);
-
-signals:
-	void closingDown();
-
-private:
-	OutputTable *mTable;
-	TableModel *mModel;
-	QMdiSubWindow* mpSubWindow;
-	QString mTitle;
-	bool mInteractive;
-};
-
 
 class OutputTable : public QTableView
 {
 	Q_OBJECT
 public:
-	OutputTable(QWidget* parent = nullptr);
+	OutputTable(TableWindow* parent = nullptr);
 	~OutputTable();
 	TableModel* getModel() const { return mModel; }
 	TableWindow* getTableWindow() const { return mWindow; }
@@ -99,11 +69,13 @@ public:
 	TableModel(QObject *parent = nullptr);
 	~TableModel();
 	bool initializeModel(QString filename, const QStringList &variables = QStringList());
+	void setTable(OutputTable* table) { mpTable = table; }
+	OutputTable* getTable() const { return mpTable; }
 	int rowCount(const QModelIndex &parent = QModelIndex()) const override;
 	int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 	QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
-	QStringList updateVariableData(QString filename = "", const QStringList &variables = QStringList());
+	QStringList updateVariableData(QString filename = "", const QStringList &variables = QStringList(), bool errorIfFileMismatch = false);
 	void setTimeVariable(QString timeVariable);
 	QString getTimeVariable() const { return mTimeVariable; }
 	void setTimeUnit(QString timeUnit) { mTimeUnit = timeUnit; }
@@ -112,15 +84,17 @@ public:
 	QStringList getVariables() const { return mVariableList; }
 	QVector<double> getVariableVector(QString variableName) const { return mVariableData.value(variableName, QVector<double>()); }
 	double getVariableData(QString variableName, int timeIndex, bool& valid) const;
+	bool addVariable(QString variableName);
+	bool removeVariable(QString variableName);
 	bool isDefined() const;
-	QString getFilename() const { return mFile.fileName(); }
-	QString getAbsoluteFilepath() const { return mFile.absoluteFilePath(); }
+	QString getFilename() const { return mFilename; }
+	QString getAbsoluteFilepath() const { return isDefined() ? mFilename : QString(""); }
 	void clearModel();
 	bool transposeModel();
 
 private:
-	QStringList retrieveVariableDataFromFile(const QStringList &variableList);
-	QFileInfo mFile;
+	QStringList updateVariableDataFromFile(QString filename, const QStringList &variableList);
+	QString mFilename;
 	QDateTime mFileLastModified;
 	QString mTimeVariable;
 	QString mTimeUnit;
@@ -128,9 +102,48 @@ private:
 	QStringList mVariableList;
 	QHash<QString, QVector<double>> mVariableData;
 	QHash<QString, QString> mUnits, mDisplayUnits;
-	QTextStream* mpTextStream;
+	OutputTable* mpTable;      
 	bool mTimeAcrossColumns;
 };
+
+class TableWindow : public ResultWindow
+{
+	Q_OBJECT
+public:
+	TableWindow(QString filename = "", const QStringList& variables = QStringList(), QWidget* parent = 0, bool interactive = false);
+	~TableWindow();
+	OutputTable* getTable() const { return mTable; }
+	TableModel* getModel() const { return mModel; }
+	void setTitle(QString title) { mTitle = title; }
+	QString getTitle() const { return mTitle; }
+	void setInteractive(bool interactive) { mInteractive = interactive; }
+	bool isInteractive() const { return mInteractive; }
+	bool isPlotWindow() const { return false; }
+	bool isTableWindow() const { return true; }
+	void setSubWindow(QMdiSubWindow* pSubWindow) { mpSubWindow = pSubWindow; }
+	QMdiSubWindow* getSubWindow() { return mpSubWindow; }
+	void clear();
+	void receiveMessage(QStringList arguments);
+
+signals:
+	void closingDown();
+
+private:
+	OutputTable* mTable;
+	TableModel* mModel;
+	QMdiSubWindow* mpSubWindow;
+	QString mTitle;
+	bool mInteractive;
+};
+
+
+
+class TableMultipleFileException : public PlotException
+{
+public:
+	TableMultipleFileException(const char* fileName) : PlotException(fileName) {}
+};
+
 
 }  // namespace OMPlot
 #endif   // OUTPUTTABLE_H

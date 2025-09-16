@@ -34,6 +34,9 @@
 #include "util/read_csv.h"
 #include "util/read_matlab4.h"
 
+#include <QDir>
+
+
 namespace OMPlot {
 
 static const int defaultTimeCount = 100, defaultVariableCount = 6;
@@ -41,15 +44,12 @@ static const int defaultTimeCount = 100, defaultVariableCount = 6;
 TableWindow::TableWindow(QString filename, const QStringList &variables, QWidget* parent, bool interactive) 
     : ResultWindow(parent)
 {
-    // FOR DEBUGGING -- change initializeModel call back to 'filename' and 'variables'
-    QString Filename = "C:\\Users\\mkindig.CYTEKBIO\\OneDrive - Cytek Biosciences Inc\\Documents\\OpenModelica\\LotkaVolterra\\LotkaVolterra_res.mat";
-    QStringList Variables; Variables << "pred_pop" << "prey_pop" << "alpha";
-
     // create child objects
     mTable = new OutputTable(this);
     mModel = new TableModel(this);
     mTable->setModel(mModel);
-    mModel->initializeModel(Filename, Variables);
+    mModel->setTable(mTable);
+    mModel->initializeModel(filename, variables);
     // set some UI properties
     QPalette p(palette());
     p.setColor(QPalette::Window, Qt::white);
@@ -62,8 +62,6 @@ TableWindow::TableWindow(QString filename, const QStringList &variables, QWidget
 
 TableWindow::~TableWindow() 
 {
-    delete mModel;
-    delete mTable;
 }
 
 void TableWindow::clear()
@@ -77,9 +75,10 @@ void TableWindow::receiveMessage(QStringList arguments)
     return;
 }
 
-OutputTable::OutputTable(QWidget* parent) :
+OutputTable::OutputTable(TableWindow* parent) :
 	QTableView(parent)
 {
+    mWindow = parent;
     setSortingEnabled(false);
 }
 
@@ -99,6 +98,7 @@ TableModel::TableModel(QObject* parent) :
 	QAbstractTableModel(parent)
 {
     mTimeAcrossColumns = true;
+    clearModel();
 }
 
 TableModel::~TableModel() {
@@ -107,36 +107,47 @@ TableModel::~TableModel() {
 
 bool TableModel::initializeModel(QString filename, const QStringList &variables)
 {
-    clearModel(); // initialize variables
-    updateVariableData(filename, variables);
+    clearModel();
+    updateVariableData(filename, variables, false);
     return isDefined();
 }
 
 bool TableModel::isDefined() const {
-    return (!getAbsoluteFilepath().isEmpty()) && mFile.isFile();
+    return (!mFilename.isEmpty()); // && (!mTimeData.isEmpty());
 }
 
 /* Update specified variables with the data in the specified file. 
    Returns the list of updated variables, filtering out variables that are not in file
 */
-QStringList TableModel::updateVariableData(QString filename, const QStringList &variables)
+QStringList TableModel::updateVariableData(QString filename, const QStringList &variables, bool errorIfFileMismatch)
 {
     // first get new filename and modified time
-    QString currentFile = getAbsoluteFilepath();
+    const QString currentFile = getAbsoluteFilepath();
+    QString newFile;
+    const QStringList empty;
+    filename = QDir::cleanPath(filename.trimmed());
     if (filename.isEmpty()) {
         if (currentFile.isEmpty()) {
-            return QStringList();  // invalid model
+            return empty;
         }
-        // otherwise, use existing mFile
-    } else if (!QFile::exists(filename)) {
+        newFile = currentFile; 
+    } else if (! QFileInfo::exists(filename)) {
         throw NoFileException(QString("File not found : ").append(filename).toStdString().c_str());
-        return QStringList();
+        return empty;
+    } else if (errorIfFileMismatch && (filename.compare(currentFile) != 0)) {
+        throw TableMultipleFileException(QString("Table can only contain variables from a single file. Existing file='%1', specified file='%2'").arg(currentFile).arg(filename).toStdString().c_str());
+        return empty;
     } else {  // file exists, so use it
-        mFile = QFileInfo(filename);
+        newFile = filename;
     }
-    QDateTime newModTime = mFile.lastModified();
+    QFileInfo fInfo(newFile);
+    if (!(fInfo.isFile() && fInfo.isReadable())) {
+        throw NoFileException(QString("File not readable : ").append(newFile).toStdString().c_str());
+        return empty;
+    }
+    QDateTime newModTime = fInfo.lastModified();
     // if filename is same and it hasn't been updated since last read, use cache
-    bool useCachedData = (currentFile.compare(mFile.absoluteFilePath()) == 0) && newModTime.isValid() && (newModTime == mFileLastModified);
+    bool useCachedData = (currentFile.compare(newFile) == 0) && newModTime.isValid() && (newModTime == mFileLastModified);
     if (! useCachedData) {
         mVariableData.clear();   // clear cache
         mFileLastModified = newModTime;
@@ -152,7 +163,7 @@ QStringList TableModel::updateVariableData(QString filename, const QStringList &
             variableList.removeAt(index);
         }
     }
-    newVariableList.append(variableList);  
+    newVariableList.append(variableList);
     // newVariableList may include variables that aren't in the cache or file. Filter those out
     QStringList variablesInCache, variablesInFile;
     foreach(QString variableName, newVariableList) {
@@ -162,7 +173,7 @@ QStringList TableModel::updateVariableData(QString filename, const QStringList &
             variablesInFile.append(variableName);
         }
     }
-    variablesInFile = retrieveVariableDataFromFile(variablesInFile);
+    variablesInFile = updateVariableDataFromFile(newFile, variablesInFile);   
     mVariableList.clear();
     foreach(QString variableName, newVariableList) {
         if (variablesInCache.contains(variableName) || variablesInFile.contains(variableName)) {
@@ -172,26 +183,28 @@ QStringList TableModel::updateVariableData(QString filename, const QStringList &
     return mVariableList;
 }
 
-QStringList TableModel::retrieveVariableDataFromFile(const QStringList &variableList)
+QStringList TableModel::updateVariableDataFromFile(QString filename, const QStringList &variableList)
 {
     if (variableList.isEmpty()) {
         return QStringList(); 
     }
     QStringList variablesRetrieved;
     QStringList variablesRemaining = variableList;
+    mFilename = filename;
+    QFileInfo mFile(mFilename);
     //PLT file
     if (mFile.fileName().endsWith("plt"))
     {
         // open the file
         QFile fileReader(getAbsoluteFilepath());
         fileReader.open(QIODevice::ReadOnly);
-        mpTextStream = new QTextStream(&fileReader);
+        QTextStream textStream(&fileReader);
         QString currentLine("");
         // read the interval size from the file
         int intervalSize = 0;
-        while (!mpTextStream->atEnd())
+        while (!textStream.atEnd())
         {
-            currentLine = mpTextStream->readLine();
+            currentLine = textStream.readLine();
             if (currentLine.startsWith("#IntervalSize"))
             {
                 intervalSize = static_cast<QString>(currentLine.split("=").last()).toInt();
@@ -202,9 +215,9 @@ QStringList TableModel::retrieveVariableDataFromFile(const QStringList &variable
         mTimeData.clear();
         bool assignTime = true;
         // Read variable values from file
-        while (!mpTextStream->atEnd())
+        while (!textStream.atEnd())
         {
-            currentLine = mpTextStream->readLine();
+            currentLine = textStream.readLine();
             if (currentLine.contains("DataSet:"))
             {
                 QString currentVariable = currentLine.remove("DataSet: ").trimmed();
@@ -213,7 +226,7 @@ QStringList TableModel::retrieveVariableDataFromFile(const QStringList &variable
                 {
                     // read the variable values now
                     QVector<double> ydata;
-                    currentLine = mpTextStream->readLine();
+                    currentLine = textStream.readLine();
                     for (int j = 0; j < intervalSize; j++)
                     {
                         QStringList values = currentLine.split(",");
@@ -221,7 +234,7 @@ QStringList TableModel::retrieveVariableDataFromFile(const QStringList &variable
                             mTimeData.append(QString(values[0]).toDouble());
                         }
                         ydata.append(QString(values[1]).toDouble());
-                        currentLine = mpTextStream->readLine();
+                        currentLine = textStream.readLine();
                     }
                     mVariableData.insert(currentVariable, ydata);
                     variablesRetrieved.append(currentVariable);
@@ -242,7 +255,6 @@ QStringList TableModel::retrieveVariableDataFromFile(const QStringList &variable
             throw NoVariableException(QString("Variables not found: ")
                 .append(variablesRemaining.join(",")).toStdString().c_str());
         }
-        // close the file
         fileReader.close();
         return variablesRetrieved;
     }
@@ -371,6 +383,28 @@ QStringList TableModel::retrieveVariableDataFromFile(const QStringList &variable
     }
 }
 
+bool TableModel::addVariable(QString variableName) 
+{
+    if (mVariableList.contains(variableName)) {
+        return true;
+    }
+    QStringList variables = mVariableList << variableName;
+    variables = updateVariableData("", variables);
+    getTable()->update();
+    return variables.contains(variableName);  // true if data exists for this variable, false otherwise
+}
+
+bool TableModel::removeVariable(QString variableName) 
+{
+    int index = mVariableList.indexOf(variableName);
+    bool exists = index >= 0;
+    if (exists) {
+        mVariableList.removeAt(index);
+        getTable()->update();
+    }
+    return exists;
+}
+
 void TableModel::clearModel()
 {
     beginResetModel();
@@ -378,7 +412,7 @@ void TableModel::clearModel()
     mTimeData.clear();
     mVariableList.clear();
     mVariableData.clear();
-    mFile = QFileInfo();   // invalid
+    mFilename = "";
     mFileLastModified = QDateTime();  // invalid
     endResetModel();
 }

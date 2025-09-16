@@ -54,6 +54,9 @@
 #include <QMenu>
 #include <QToolBar>
 
+#include <iostream>
+#include <fstream>
+
 using namespace OMPlot;
 
 namespace VariableItemData {
@@ -1974,10 +1977,29 @@ void VariablesWidget::plotVariables(const QModelIndex &index, qreal curveThickne
         pVariablesTreeItem->setChecked(checkState);
       }
     }
-    PlotWindow* pPlotWindow = nullptr;
-    TableWindow* pTableWindow = nullptr;
-    if (pResultWindow->isPlotWindow()) { pPlotWindow = qobject_cast<PlotWindow*>(pResultWindow); }
-    if (pResultWindow->isTableWindow()) { pTableWindow = qobject_cast<TableWindow*>(pResultWindow); }
+    PlotWindow* pPlotWindow = pResultWindow->isPlotWindow() ? qobject_cast<PlotWindow*>(pResultWindow) : nullptr;  // At most one of pPlotWindow or pTableWindow can be non-null
+    TableWindow* pTableWindow = pResultWindow->isTableWindow() ? qobject_cast<TableWindow*>(pResultWindow) : nullptr;
+/****  TEMP   ****/
+QString filename = QString("%1/%2").arg(pVariablesTreeItem->getFilePath()).arg(pVariablesTreeItem->getFileName());
+std::ofstream myfile("C:/temp/errorlog.txt"); myfile << "'" << filename.toStdString() << "'" << "\n";
+QString checkedVariable = pVariablesTreeItem->getPlotVariable();
+    
+    if (!pTableWindow) {
+        MainWindow::instance()->getPlotWindowContainer()->addTableWindow();
+        pTableWindow = qobject_cast<TableWindow*>(MainWindow::instance()->getPlotWindowContainer()->getCurrentWindow());
+        if (! (pTableWindow && pTableWindow->isTableWindow())) {
+            return;
+        }
+        QStringList variables = QStringList() << checkedVariable;
+        pTableWindow->getModel()->updateVariableData(filename, variables, false);
+    } else if (pVariablesTreeItem->isChecked()) {
+        pTableWindow->getModel()->addVariable(checkedVariable);
+    } else {
+        pTableWindow->getModel()->removeVariable(checkedVariable);
+    }
+return;
+/*** END TEMP ****/
+
     // if the variable is not an array and
     // pPlotWindow is 0 or the plot's type is PLOTARRAY or PLOTARRAYPARAMETRIC
     // then create a new plot window.
