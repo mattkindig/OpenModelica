@@ -35,6 +35,7 @@
 #include "OMPlot.h"
 #include "PlotWindowContainer.h"  // for ResultWindow
 
+
 #include <QAbstractTableModel>
 #include <QTableView>
 #include <QFileInfo>
@@ -46,6 +47,20 @@ namespace OMPlot
 class TableWindow;
 class OutputTable;
 class TableModel;
+
+struct TableUnit {
+	double scale;
+	double offset;
+	QString unit;
+	QString displayUnit;
+	TableUnit() {
+		scale = 1.0;
+		offset = 0.0;
+		unit = displayUnit = "";
+	}
+};
+
+typedef QHash<QString, QVector<double>> VarData;
 
 class OutputTable : public QTableView
 {
@@ -71,38 +86,66 @@ public:
 	bool initializeModel(QString filename, const QStringList &variables = QStringList());
 	void setTable(OutputTable* table) { mpTable = table; }
 	OutputTable* getTable() const { return mpTable; }
+	
 	int rowCount(const QModelIndex &parent = QModelIndex()) const override;
 	int columnCount(const QModelIndex &parent = QModelIndex()) const override;
 	QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 	QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
-	QStringList updateVariableData(QString filename = "", const QStringList &variables = QStringList(), bool errorIfFileMismatch = false);
-	void setTimeVariable(QString timeVariable);
+
+	bool isDefined() const;
+	QString getFilename() const { return isDefined() ? mFile.fileName() : QString(""); }
+	QString getAbsoluteFilePath() const { return isDefined() ? mFile.absoluteFilePath() : QString(""); }
+
+	QStringList setVariables(const QStringList& variables, QString filename = "");
+	bool addVariable(QString variableName, QString filename = "", bool errorIfFileMismatch = true);
+	QStringList addVariables(const QStringList& variableNames, QString filename = "", bool errorIfFileMismatch = true);
+	bool removeVariable(QString variableName);
+	QStringList removeVariables(const QStringList& variableNames);
+	QStringList updateVariables(); 
+
 	QString getTimeVariable() const { return mTimeVariable; }
-	void setTimeUnit(QString timeUnit) { mTimeUnit = timeUnit; }
-	QString getTimeUnit() { return mTimeUnit; }
+	void setTimeUnit(QString timeUnit) { mUnits.insert(mTimeVariable, timeUnit); }
+	QString getTimeUnit() { return mUnits.value(mTimeVariable, QString("")); }
+	QString getTimeDisplayUnit() { return mDisplayUnits.value(mTimeVariable, QString("")); }
+
+	/*
+	void setUnit(QString variableName, QString unit);
+	QString getUnit(QString variableName) const;
+	void setDisplayUnit(QString variableName, QString unit);
+	QString getDisplayUnit(QString variableName) const;
+	*/
+
+//	QStringList updateVariableData(QString filename = "", const QStringList &variables = QStringList(), bool errorIfFileMismatch = false);
+	void setTimeVariable(QString timeVariable);
+
 	QVector<double> getTimes() const { return mTimeData;  }
 	QStringList getVariables() const { return mVariableList; }
-	QVector<double> getVariableVector(QString variableName) const { return mVariableData.value(variableName, QVector<double>()); }
-	double getVariableData(QString variableName, int timeIndex, bool& valid) const;
-	bool addVariable(QString variableName);
-	bool removeVariable(QString variableName);
-	bool isDefined() const;
-	QString getFilename() const {  return isDefined() ? mFile.fileName() : QString(""); }
-	QString getAbsoluteFilePath() const { return isDefined() ? mFile.absoluteFilePath() : QString(""); }
+//	QStringList getVariableLabels() const;
+
+	QVector<double> getVariableData(QString variableName) const { return mVariableData.value(variableName, QVector<double>()); }
+	double getVariableValue(QString variableName, int timeIndex, bool& valid) const;
+
 	void clearModel();
 	bool transposeModel();
+//	VarData updateVariables(QString filename, const QStringList &variables, const VarData &existingData, QString &timeVariable);
+signals:
+	void updateModel(QString filename, const QStringList& variables, QString timeVariable, const VarData& data);
+private slots:	
+	void updateModelSlot(QString filename, const QStringList& variables, QString timeVariable, const VarData& data);
 
 private:
-	QStringList updateVariableDataFromFile(QString filename, const QStringList &variableList);
+	QString getInputFilename(QString filename = "") const;
+	QStringList updateVariableDataFromFile(QString filename, const QStringList &variableList, VarData &variableData, QString &timeVariable);
+	bool cacheIsValid() const;
 	QFileInfo mFile;
 	QDateTime mFileLastModified;
 	QString mTimeVariable;
-	QString mTimeUnit;
 	QVector<double> mTimeData;
 	QStringList mVariableList;
-	QHash<QString, QVector<double>> mVariableData;
+	VarData mVariableData;
 	QHash<QString, QString> mUnits, mDisplayUnits;
 	OutputTable* mpTable;      
+	QHash<QString, TableUnit> mUnitMap;
 	bool mTimeAcrossColumns;
 };
 
@@ -135,7 +178,6 @@ private:
 	QString mTitle;
 	bool mInteractive;
 };
-
 
 
 class TableMultipleFileException : public PlotException

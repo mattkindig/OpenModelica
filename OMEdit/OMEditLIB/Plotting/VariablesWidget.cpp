@@ -1979,11 +1979,8 @@ void VariablesWidget::plotVariables(const QModelIndex &index, qreal curveThickne
     }
     PlotWindow* pPlotWindow = pResultWindow->isPlotWindow() ? qobject_cast<PlotWindow*>(pResultWindow) : nullptr;  // At most one of pPlotWindow or pTableWindow can be non-null
     TableWindow* pTableWindow = pResultWindow->isTableWindow() ? qobject_cast<TableWindow*>(pResultWindow) : nullptr;
-/****  TEMP   ****/
-QString filename = QString("%1/%2").arg(pVariablesTreeItem->getFilePath()).arg(pVariablesTreeItem->getFileName());
-std::ofstream myfile("C:/temp/errorlog.txt"); myfile << "'" << filename.toStdString() << "'" << "\n";
-QString checkedVariable = pVariablesTreeItem->getPlotVariable();
-    
+    QString filename = QString("%1/%2").arg(pVariablesTreeItem->getFilePath()).arg(pVariablesTreeItem->getFileName());
+    QString checkedVariable = pVariablesTreeItem->getPlotVariable();
     if (!pTableWindow) {
         MainWindow::instance()->getPlotWindowContainer()->addTableWindow();
         pTableWindow = qobject_cast<TableWindow*>(MainWindow::instance()->getPlotWindowContainer()->getCurrentWindow());
@@ -1991,9 +1988,9 @@ QString checkedVariable = pVariablesTreeItem->getPlotVariable();
             return;
         }
         QStringList variables = QStringList() << checkedVariable;
-        pTableWindow->getModel()->updateVariableData(filename, variables, false);
+        pTableWindow->getModel()->addVariable(checkedVariable, filename, true);
     } else if (pVariablesTreeItem->isChecked()) {
-        pTableWindow->getModel()->addVariable(checkedVariable);
+        pTableWindow->getModel()->addVariable(checkedVariable, filename, true);
     } else {
         pTableWindow->getModel()->removeVariable(checkedVariable);
     }

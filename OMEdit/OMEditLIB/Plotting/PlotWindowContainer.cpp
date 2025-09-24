@@ -786,7 +786,7 @@ void PlotWindowContainer::exportVariablesFromTable(TableWindow* table)
         data << StringHandler::number(timeVector.at(i));
         foreach(QString variable, variables) {
             bool valid = true;
-            double value = table->getModel()->getVariableData(variable, i, valid);
+            double value = table->getModel()->getVariableValue(variable, i, valid);
             /*
             OMCInterface::convertUnits_res convertUnit = MainWindow::instance()->getOMCProxy()->convertUnits(pPlotCurve->getYDisplayUnit(), pPlotCurve->getYUnit());
             if (convertUnit.unitsCompatible) {
