@@ -645,8 +645,9 @@ QVariant TableModel::headerData(int section, Qt::Orientation orientation, int ro
 }
 
 bool TableModel::transposeModel() {
+    beginResetModel();
     mTimeAcrossColumns = ! mTimeAcrossColumns;
-    updateVariables();
+    endResetModel();
     return mTimeAcrossColumns;
 }
 

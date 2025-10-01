@@ -1963,7 +1963,7 @@ void VariablesWidget::plotVariables(const QModelIndex &index, qreal curveThickne
   try {
     // if pResultWindow is 0 then get the current window.
     if (!pResultWindow) {
-      QMdiSubWindow *pSubWindow = MainWindow::instance()->getPlotWindowContainer()->getPlotSubWindowFromMdi(false);
+      QMdiSubWindow *pSubWindow = MainWindow::instance()->getPlotWindowContainer()->getPlotSubWindowFromMdi(true);
       if (pSubWindow && PlotWindowContainer::isResultWindow(pSubWindow->widget())) {
         pResultWindow = qobject_cast<ResultWindow*>(pSubWindow->widget());
         /* Since we change the active subwindow so the variable check state might change after call to setActiveSubWindow
@@ -1981,17 +1981,18 @@ void VariablesWidget::plotVariables(const QModelIndex &index, qreal curveThickne
     TableWindow* pTableWindow = pResultWindow->isTableWindow() ? qobject_cast<TableWindow*>(pResultWindow) : nullptr;
     QString filename = QString("%1/%2").arg(pVariablesTreeItem->getFilePath()).arg(pVariablesTreeItem->getFileName());
     QString checkedVariable = pVariablesTreeItem->getPlotVariable();
+
     if (!pTableWindow) {
         MainWindow::instance()->getPlotWindowContainer()->addTableWindow();
         pTableWindow = qobject_cast<TableWindow*>(MainWindow::instance()->getPlotWindowContainer()->getCurrentWindow());
         if (! (pTableWindow && pTableWindow->isTableWindow())) {
             return;
         }
-        QStringList variables = QStringList() << checkedVariable;
         pTableWindow->getModel()->addVariable(checkedVariable, filename, true);
-    } else if (pVariablesTreeItem->isChecked()) {
+        pVariablesTreeItem->setChecked(true);
+    } else if (pTableWindow && pVariablesTreeItem->isChecked()) {
         pTableWindow->getModel()->addVariable(checkedVariable, filename, true);
-    } else {
+    } else if (pTableWindow) {
         pTableWindow->getModel()->removeVariable(checkedVariable);
     }
 return;
