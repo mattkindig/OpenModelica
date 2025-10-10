@@ -1556,19 +1556,22 @@ bool StringHandler::naturalSort(const QString &s1, const QString &s2) {
 
 bool StringHandler::naturalSortList(const QStringList& L1, const QStringList& L2)
 {
-    for (int i = 0; i < L1.size(); i++) {
-        const QString strA = L1.at(i);
-        const QString strB = L2.at(i);
-        bool lessAB = naturalSort(strA, strB);
-        bool lessBA = naturalSort(strB, strA);
-        if (lessAB && lessBA) {
-            // strA and strB have same value -- go to next index
-            continue; 
-        } else if (lessAB) {
-            return true;
-        } else {
-            return false;
+    // lists with fewer elements appear earlier in sorted list
+    int n1 = L1.size(), n2 = L2.size();
+    if (n1 < n2)  return true;
+    else if (n1 > n2)  return false;
+    // if we got here then both lists are same size
+    for (int i = 0; i < n1; i++) {
+        const QString str1 = L1.at(i);
+        const QString str2 = L2.at(i);
+        if (naturalSort(str1, str2)) {
+            if (naturalSort(str2, str1)) {
+                // str1==str2 --> go to next index
+                continue;
+            }
+            return true;   // str1 < str2
         }
+        return false;  // str1 > str2
     }
     return false;
 }
@@ -1587,8 +1590,7 @@ QStringList StringHandler::sortArrayElements(const QStringList& variables)
         }
         baseVar = varParts.first();
         QStringList arrayIndices = removeFirstLastSquareBrackets(varParts.last()).split(QString(","), Qt::SkipEmptyParts);
-        // append index to guarentee stable sort
-        arrayIndices.append(QString::number(index));
+        arrayIndices.append(QString::number(index));  // append index to guarentee stable sort and to recover original variable position
         arrayIndicesVector.append(arrayIndices);
     }
     std::sort(arrayIndicesVector.begin(), arrayIndicesVector.end(), naturalSortList);
