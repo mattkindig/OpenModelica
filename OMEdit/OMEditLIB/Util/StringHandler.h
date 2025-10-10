@@ -145,6 +145,8 @@ public:
   static QStringList makeVariableParts(QString variable);
   static QStringList makeVariablePartsWithInd(QString variable);
   static bool naturalSort(const QString &s1, const QString &s2);
+  static bool naturalSortList(const QStringList& L1, const QStringList& L2);
+  static QStringList sortArrayElements(const QStringList& variables);
 #if defined(_WIN32)
   static QProcessEnvironment simulationProcessEnvironment();
   static QProcessEnvironment modelicaSimulationProcessEnvironment(const QString pathsFileName, QString *errorMsg);

@@ -33,6 +33,7 @@
  */
 
 #include "VariablesWidget.h"
+#include "Util/StringHandler.h"
 #include "MainWindow.h"
 #include "OMC/OMCProxy.h"
 #include "Modeling/ModelWidgetContainer.h"
@@ -55,7 +56,6 @@
 #include <QToolBar>
 
 #include <iostream>
-#include <fstream>
 
 using namespace OMPlot;
 
@@ -1980,24 +1980,38 @@ void VariablesWidget::plotVariables(const QModelIndex &index, qreal curveThickne
     PlotWindow* pPlotWindow = pResultWindow->isPlotWindow() ? qobject_cast<PlotWindow*>(pResultWindow) : nullptr;  // At most one of pPlotWindow or pTableWindow can be non-null
     TableWindow* pTableWindow = pResultWindow->isTableWindow() ? qobject_cast<TableWindow*>(pResultWindow) : nullptr;
     QString filename = QString("%1/%2").arg(pVariablesTreeItem->getFilePath()).arg(pVariablesTreeItem->getFileName());
-    QString checkedVariable = pVariablesTreeItem->getPlotVariable();
-
+    QStringList checkedVariables, processedVariables;
+    if (pVariablesTreeItem->isMainArray()) {
+        for (int i = 0; i < pVariablesTreeItem->childCount(); i++) {
+            checkedVariables.append(pVariablesTreeItem->child(i)->getPlotVariable());
+        }
+        checkedVariables = StringHandler::sortArrayElements(checkedVariables);
+    } else {
+        checkedVariables.append(pVariablesTreeItem->getPlotVariable());
+    }
+    bool checked = false;
     if (!pTableWindow) {
         MainWindow::instance()->getPlotWindowContainer()->addTableWindow();
         pTableWindow = qobject_cast<TableWindow*>(MainWindow::instance()->getPlotWindowContainer()->getCurrentWindow());
         if (! (pTableWindow && pTableWindow->isTableWindow())) {
             return;
         }
-        pTableWindow->getModel()->addVariable(checkedVariable, filename, true);
-        pVariablesTreeItem->setChecked(true);
+        processedVariables = pTableWindow->getModel()->addVariables(checkedVariables, filename, true);
+        checked = ! processedVariables.isEmpty();
     } else if (pTableWindow && pVariablesTreeItem->isChecked()) {
-        pTableWindow->getModel()->addVariable(checkedVariable, filename, true);
+        processedVariables = pTableWindow->getModel()->addVariables(checkedVariables, filename, true);
+        checked = ! processedVariables.isEmpty();
     } else if (pTableWindow) {
-        pTableWindow->getModel()->removeVariable(checkedVariable);
+        processedVariables = pTableWindow->getModel()->removeVariables(checkedVariables);
+        checked = processedVariables.isEmpty();
     }
-return;
-/*** END TEMP ****/
-
+    pVariablesTreeItem->setChecked(checked);
+    if (pVariablesTreeItem->isMainArray()) {
+        for (int i = 0; i < pVariablesTreeItem->childCount(); i++) {
+            pVariablesTreeItem->child(i)->setChecked(checked);
+       }
+    }
+    return;
     // if the variable is not an array and
     // pPlotWindow is 0 or the plot's type is PLOTARRAY or PLOTARRAYPARAMETRIC
     // then create a new plot window.

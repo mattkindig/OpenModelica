@@ -45,6 +45,8 @@
 #include <QFileDialog>
 #include <QTextCodec>
 
+#include <algorithm>    // std::sort
+
 #define toAscii toLatin1
 
 
@@ -1551,6 +1553,53 @@ bool StringHandler::naturalSort(const QString &s1, const QString &s2) {
     }
   }
 }
+
+bool StringHandler::naturalSortList(const QStringList& L1, const QStringList& L2)
+{
+    for (int i = 0; i < L1.size(); i++) {
+        const QString strA = L1.at(i);
+        const QString strB = L2.at(i);
+        bool lessAB = naturalSort(strA, strB);
+        bool lessBA = naturalSort(strB, strA);
+        if (lessAB && lessBA) {
+            // strA and strB have same value -- go to next index
+            continue; 
+        } else if (lessAB) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    return false;
+}
+
+QStringList StringHandler::sortArrayElements(const QStringList& variables)
+{
+    QString baseVar = "";
+    QVector<QStringList> arrayIndicesVector;
+    for (int index = 0; index < variables.size(); ++index) {
+        QStringList varParts = makeVariablePartsWithInd(variables[index]);
+        if (varParts.isEmpty()) {
+            return QStringList(); // not an array -- throw error
+        }
+        else if ((!baseVar.isEmpty()) && (varParts.first().compare(baseVar) != 0)) {
+            return QStringList(); // throw error
+        }
+        baseVar = varParts.first();
+        QStringList arrayIndices = removeFirstLastSquareBrackets(varParts.last()).split(QString(","), Qt::SkipEmptyParts);
+        // append index to guarentee stable sort
+        arrayIndices.append(QString::number(index));
+        arrayIndicesVector.append(arrayIndices);
+    }
+    std::sort(arrayIndicesVector.begin(), arrayIndicesVector.end(), naturalSortList);
+    QStringList sortedVariables;
+    foreach(QStringList arrayIndices, arrayIndicesVector) {
+        int index = arrayIndices.last().toInt();
+        sortedVariables.append(variables.at(index));
+    }
+    return sortedVariables;
+}
+
 
 #if defined(_WIN32)
 /*!

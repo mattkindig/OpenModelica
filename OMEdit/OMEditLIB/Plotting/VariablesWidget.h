@@ -86,6 +86,7 @@ public:
   void setSimulationOptions(SimulationOptions simulationOptions) {mSimulationOptions = simulationOptions;}
   QIcon getVariableTreeItemIcon(QString name) const;
   void insertChild(int position, VariablesTreeItem *pVariablesTreeItem);
+  int childCount() const {return mChildren.size();}
   VariablesTreeItem* child(int row);
   void removeChildren();
   void removeChild(VariablesTreeItem *pVariablesTreeItem);

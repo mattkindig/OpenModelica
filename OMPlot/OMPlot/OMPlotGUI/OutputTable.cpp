@@ -268,11 +268,12 @@ QStringList TableModel::updateVariableDataFromFile(QString filename, const QStri
             variablesRemaining.insert(variableName);
         }
     }
-  /*if (variablesRemaining.isEmpty()) {
-        return variablesDefined;
-    } */  
+    if (variablesRemaining.isEmpty()) 
+    {
+        // no variables to extract from file, so just jump to end of function
+    }
     //PLT file
-    if (filename.endsWith("plt"))
+    else if (filename.endsWith("plt"))
     {
         // open the file
         QFile fileReader(filename);
@@ -444,7 +445,7 @@ QStringList TableModel::updateVariableDataFromFile(QString filename, const QStri
     // if some variables of the specified variables were not found, throw error
     if (!variablesRemaining.isEmpty()) {
         QStringList missingVariables(variablesRemaining.begin(), variablesRemaining.end());
-        throw NoVariableException(QString("Variables not found: ")
+        throw NoVariableException(QString("LL447 Variables not found: ")
             .append(missingVariables.join(",")).toStdString().c_str());
     }
     // return variables in originally passed-in order, removing variables that were not found
@@ -487,23 +488,6 @@ QStringList TableModel::addVariables(const QStringList& variableNames, QString f
 
 bool TableModel::removeVariable(QString variableName)
 {
-    /*
-    if (filename.isEmpty()) {
-        // just use current file
-    } else if (errorIfFileMismatch && (filename.compare(getAbsoluteFilePath() != 0))) {
-        return false;
-    }
-    const QStringList variableList = mVariableList;
-    int index = variableList.indexOf(variableName);
-    if (index >= 0) {
-        variableList.removeAt(index);
-        // update with data
-        // emit updateModel(getAbsoluteFilePath(), variableList, mTimeVariable, mVariableData);
-        // getTable()->update();
-        return true;
-    }
-    return false;
-    */
     QStringList variableList(mVariableList);
     int index = variableList.indexOf(variableName);
     if (index >= 0) {
@@ -529,9 +513,10 @@ QStringList TableModel::removeVariables(const QStringList& variableNames)
     return removedVariables;
 }
 
-void TableModel::updateModelSlot(QString filename, const QStringList& variables, QString timeVariable, const VarData& data) {
+void TableModel::updateModelSlot(QString filename, const QStringList& variables, QString timeVariable, const VarData& data) 
+{
     beginResetModel();
-    if (filename.isEmpty()) {   // invalid file
+    if (filename.isEmpty() || variables.isEmpty()) {   // invalid file or empty variable list
         mFile = QFileInfo();
         mFileLastModified = QDateTime();
     } else {
