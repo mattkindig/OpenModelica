@@ -1576,21 +1576,21 @@ bool StringHandler::naturalSortList(const QStringList& L1, const QStringList& L2
     return false;
 }
 
-QStringList StringHandler::sortArrayElements(const QStringList& variables)
+QStringList StringHandler::sortArrayElements(const QStringList& variables, QString separator)
 {
-    QString baseVar = "";
+    QString baseArrayName = "";
     QVector<QStringList> arrayIndicesVector;
     for (int index = 0; index < variables.size(); ++index) {
         QStringList varParts = makeVariablePartsWithInd(variables[index]);
         if (varParts.isEmpty()) {
             return QStringList(); // not an array -- throw error
         }
-        else if ((!baseVar.isEmpty()) && (varParts.first().compare(baseVar) != 0)) {
+        else if ((!baseArrayName.isEmpty()) && (varParts.first().compare(baseArrayName) != 0)) {
             return QStringList(); // throw error
         }
-        baseVar = varParts.first();
-        QStringList arrayIndices = removeFirstLastSquareBrackets(varParts.last()).split(QString(","), Qt::SkipEmptyParts);
-        arrayIndices.append(QString::number(index));  // append index to guarentee stable sort and to recover original variable position
+        baseArrayName = varParts.first();
+        QStringList arrayIndices = removeFirstLastSquareBrackets(varParts.last()).split(QString(separator), Qt::SkipEmptyParts);
+        arrayIndices.append(QString::number(index));  // append index to make sort stable and to recover original variable position
         arrayIndicesVector.append(arrayIndices);
     }
     std::sort(arrayIndicesVector.begin(), arrayIndicesVector.end(), naturalSortList);
