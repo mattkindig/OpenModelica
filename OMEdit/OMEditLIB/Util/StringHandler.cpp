@@ -1560,20 +1560,20 @@ bool StringHandler::naturalSortList(const QStringList& L1, const QStringList& L2
     int n1 = L1.size(), n2 = L2.size();
     if (n1 < n2)  return true;
     else if (n1 > n2)  return false;
-    // if we got here then both lists are same size
+    // both lists are same size -- compare each element
     for (int i = 0; i < n1; i++) {
         const QString str1 = L1.at(i);
         const QString str2 = L2.at(i);
         if (naturalSort(str1, str2)) {
             if (naturalSort(str2, str1)) {
-                // str1==str2 --> go to next index
+                // str1==str2 --> compare subsequent element
                 continue;
             }
             return true;   // str1 < str2
         }
         return false;  // str1 > str2
     }
-    return false;
+    return true;   // lists are identical
 }
 
 QStringList StringHandler::sortArrayElements(const QStringList& variables, QString separator)
