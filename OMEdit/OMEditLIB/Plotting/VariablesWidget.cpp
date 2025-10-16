@@ -56,6 +56,9 @@
 #include <QToolBar>
 
 #include <iostream>
+#include <algorithm>   // std::sort
+
+#include <fstream>
 
 using namespace OMPlot;
 
@@ -1985,7 +1988,8 @@ void VariablesWidget::plotVariables(const QModelIndex &index, qreal curveThickne
         for (int i = 0; i < pVariablesTreeItem->childCount(); i++) {
             checkedVariables.append(pVariablesTreeItem->child(i)->getPlotVariable());
         }
-        checkedVariables = StringHandler::sortArrayElements(checkedVariables);
+        // Child array elements are listed in unspecified order. Sort into numerical order
+        std::sort(checkedVariables.begin(), checkedVariables.end(), StringHandler::naturalSort);
     } else {
         checkedVariables.append(pVariablesTreeItem->getPlotVariable());
     }
@@ -2008,7 +2012,10 @@ void VariablesWidget::plotVariables(const QModelIndex &index, qreal curveThickne
     pVariablesTreeItem->setChecked(checked);
     if (pVariablesTreeItem->isMainArray()) {
         for (int i = 0; i < pVariablesTreeItem->childCount(); i++) {
-            pVariablesTreeItem->child(i)->setChecked(checked);
+            // set affected child elements to same check status as parent
+            if (processedVariables.contains(pVariablesTreeItem->child(i)->getPlotVariable())) {
+                pVariablesTreeItem->child(i)->setChecked(checked);
+            }
        }
     }
     return;

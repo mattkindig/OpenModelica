@@ -45,10 +45,7 @@
 #include <QFileDialog>
 #include <QTextCodec>
 
-#include <algorithm>    // std::sort
-
 #define toAscii toLatin1
-
 
 QString StringHandler::mLastOpenDir;
 
@@ -1553,55 +1550,6 @@ bool StringHandler::naturalSort(const QString &s1, const QString &s2) {
     }
   }
 }
-
-bool StringHandler::naturalSortList(const QStringList& L1, const QStringList& L2)
-{
-    // lists with fewer elements appear earlier in sorted list
-    int n1 = L1.size(), n2 = L2.size();
-    if (n1 < n2)  return true;
-    else if (n1 > n2)  return false;
-    // both lists are same size -- compare each element
-    for (int i = 0; i < n1; i++) {
-        const QString str1 = L1.at(i);
-        const QString str2 = L2.at(i);
-        if (naturalSort(str1, str2)) {
-            if (naturalSort(str2, str1)) {
-                // str1==str2 --> compare subsequent element
-                continue;
-            }
-            return true;   // str1 < str2
-        }
-        return false;  // str1 > str2
-    }
-    return true;   // lists are identical
-}
-
-QStringList StringHandler::sortArrayElements(const QStringList& variables, QString separator)
-{
-    QString baseArrayName = "";
-    QVector<QStringList> arrayIndicesVector;
-    for (int index = 0; index < variables.size(); ++index) {
-        QStringList varParts = makeVariablePartsWithInd(variables[index]);
-        if (varParts.isEmpty()) {
-            return QStringList(); // not an array -- throw error
-        }
-        else if ((!baseArrayName.isEmpty()) && (varParts.first().compare(baseArrayName) != 0)) {
-            return QStringList(); // throw error
-        }
-        baseArrayName = varParts.first();
-        QStringList arrayIndices = removeFirstLastSquareBrackets(varParts.last()).split(QString(separator), Qt::SkipEmptyParts);
-        arrayIndices.append(QString::number(index));  // append index to make sort stable and to recover original variable position
-        arrayIndicesVector.append(arrayIndices);
-    }
-    std::sort(arrayIndicesVector.begin(), arrayIndicesVector.end(), naturalSortList);
-    QStringList sortedVariables;
-    foreach(QStringList arrayIndices, arrayIndicesVector) {
-        int index = arrayIndices.last().toInt();
-        sortedVariables.append(variables.at(index));
-    }
-    return sortedVariables;
-}
-
 
 #if defined(_WIN32)
 /*!
