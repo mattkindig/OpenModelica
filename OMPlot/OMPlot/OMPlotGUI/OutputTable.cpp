@@ -183,77 +183,6 @@ QStringList TableModel::updateVariables() {
 /* Update specified variables with the data in the specified file. 
    Returns the list of updated variables, filtering out variables that are not in file
 */ 
-
-/*
-QStringList TableModel::updateVariableData(QString filename, const QStringList &variables, bool errorIfFileMismatch)
-{
-   
-    // first get new filename and modified time
-    const QString currentFile = getAbsoluteFilePath();
-    QString newFile = QDir::cleanPath(filename.trimmed());
-    const QStringList empty;
-    if (newFile.isEmpty()) {
-        if (currentFile.isEmpty()) {
-            return empty;
-        }
-        newFile = currentFile; 
-    } else if (! QFileInfo::exists(newFile)) {
-        throw NoFileException(QString("File not found : ").append(newFile).toStdString().c_str());
-        return empty;
-    } else if (errorIfFileMismatch && (! currentFile.isEmpty()) && (newFile.compare(currentFile) != 0)) {
-        throw TableMultipleFileException(QString("Table can only contain variables from a single file. Existing file='%1', specified file='%2'").arg(currentFile).arg(newFile).toStdString().c_str());
-        return empty;
-    } else {  
-        // newFile exists, so use it
-    }
-    QFileInfo fInfo(newFile);
-    if (!(fInfo.isFile() && fInfo.isReadable())) {
-        throw NoFileException(QString("File not readable : ").append(newFile).toStdString().c_str());
-        return empty;
-    }
-    QDateTime newModTime = fInfo.lastModified();
-    newFile = fInfo.absoluteFilePath();
-    // if filename is same and it hasn't been updated since last read, use cache
-    bool useCachedData = (currentFile.compare(newFile) == 0) && newModTime.isValid() && (newModTime == mFileLastModified);
-    if (! useCachedData) {
-        mVariableData.clear();   // clear cache
-        mFileLastModified = newModTime;
-    }
-    
-
-    // Variables which are already in mVariableList are kept in same order; new variables are appended to the end in the order they appear in 'variables'.
-    // This ensures that the existing display order is not changed when adding additional variables.
-    QString newFile = getInputFilename(filename);
-    QStringList variableList = variables.isEmpty() ? mVariableList : variables;
-    QStringList newVariableList;
-    foreach(QString variableName, mVariableList) {
-        int index = variableList.indexOf(variableName);
-        if (index >= 0) {
-            newVariableList.append(variableName);
-            variableList.removeAt(index);
-        }
-    }
-    newVariableList.append(variableList);
-    // newVariableList may include variables that aren't in the cache or file. Filter those out
-    QStringList variablesInCache, variablesInFile;
-    foreach(QString variableName, newVariableList) {
-        if (useCachedData && mVariableData.contains(variableName) && (!mVariableData.value(variableName, QVector<double>()).isEmpty())) {
-            variablesInCache.append(variableName);
-        } else {
-            variablesInFile.append(variableName);
-        }
-    }
-    variablesInFile = updateVariableDataFromFile(newFile, variablesInFile);
-    variableList.clear();
-    foreach(QString variableName, newVariableList) {
-        if (variablesInCache.contains(variableName) || variablesInFile.contains(variableName)) {
-            variableList.append(variableName);
-        }
-    }
-    return variableList;
-}
-*/
-
 QStringList TableModel::updateVariableDataFromFile(QString filename, const QStringList& variableList, VarData& variableData, QString& timeVariable)
 {
     if (filename.isEmpty() || variableList.isEmpty()) {
@@ -444,8 +373,7 @@ QStringList TableModel::updateVariableDataFromFile(QString filename, const QStri
     // if some variables of the specified variables were not found, throw error
     if (!variablesRemaining.isEmpty()) {
         QStringList missingVariables(variablesRemaining.begin(), variablesRemaining.end());
-        throw NoVariableException(QString("LL447 Variables not found: ")
-            .append(missingVariables.join(",")).toStdString().c_str());
+        throw NoVariableException(QString("Variables not found: ").append(missingVariables.join(",")).toStdString().c_str());
     }
     // return variables in originally passed-in order, removing variables that were not found
     QStringList extractedVariables;
@@ -457,7 +385,7 @@ QStringList TableModel::updateVariableDataFromFile(QString filename, const QStri
     return extractedVariables;
 }
 
-bool TableModel::addVariable(QString variableName, QString filename, bool errorIfFileMismatch)
+bool TableModel::addVariable(QString variableName, QString filename)
 {
     QStringList allVariables(mVariableList);
     allVariables.append(variableName);
@@ -465,7 +393,7 @@ bool TableModel::addVariable(QString variableName, QString filename, bool errorI
     return allVariables.contains(variableName);
 }
 
-QStringList TableModel::addVariables(const QStringList& variableNames, QString filename, bool errorIfFileMismatch) {
+QStringList TableModel::addVariables(const QStringList& variableNames, QString filename) {
     QStringList allVariables(mVariableList);
     allVariables.append(variableNames);
     allVariables = setVariables(allVariables, filename);

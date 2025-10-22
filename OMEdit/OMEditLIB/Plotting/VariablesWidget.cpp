@@ -1980,8 +1980,8 @@ void VariablesWidget::plotVariables(const QModelIndex &index, qreal curveThickne
         pVariablesTreeItem->setChecked(checkState);
       }
     }
-    PlotWindow* pPlotWindow = pResultWindow->isPlotWindow() ? qobject_cast<PlotWindow*>(pResultWindow) : nullptr;  // At most one of pPlotWindow or pTableWindow can be non-null
-    TableWindow* pTableWindow = pResultWindow->isTableWindow() ? qobject_cast<TableWindow*>(pResultWindow) : nullptr;
+    PlotWindow* pPlotWindow =   pResultWindow && pResultWindow->isPlotWindow()  ? qobject_cast<PlotWindow*>(pResultWindow) : nullptr;  // At most one of pPlotWindow or pTableWindow can be non-null
+    TableWindow* pTableWindow = pResultWindow && pResultWindow->isTableWindow() ? qobject_cast<TableWindow*>(pResultWindow) : nullptr;
     QString filename = QString("%1/%2").arg(pVariablesTreeItem->getFilePath()).arg(pVariablesTreeItem->getFileName());
     QStringList checkedVariables, processedVariables;
     if (pVariablesTreeItem->isMainArray()) {
@@ -2000,10 +2000,10 @@ void VariablesWidget::plotVariables(const QModelIndex &index, qreal curveThickne
         if (! (pTableWindow && pTableWindow->isTableWindow())) {
             return;
         }
-        processedVariables = pTableWindow->getModel()->addVariables(checkedVariables, filename, true);
+        processedVariables = pTableWindow->getModel()->addVariables(checkedVariables, filename);
         checked = ! processedVariables.isEmpty();
     } else if (pTableWindow && pVariablesTreeItem->isChecked()) {
-        processedVariables = pTableWindow->getModel()->addVariables(checkedVariables, filename, true);
+        processedVariables = pTableWindow->getModel()->addVariables(checkedVariables, filename);
         checked = ! processedVariables.isEmpty();
     } else if (pTableWindow) {
         processedVariables = pTableWindow->getModel()->removeVariables(checkedVariables);

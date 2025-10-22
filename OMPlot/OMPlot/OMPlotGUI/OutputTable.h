@@ -97,8 +97,8 @@ public:
 	QString getAbsoluteFilePath() const { return isDefined() ? mFile.absoluteFilePath() : QString(""); }
 
 	QStringList setVariables(const QStringList& variables, QString filename = "");
-	bool addVariable(QString variableName, QString filename = "", bool errorIfFileMismatch = true);
-	QStringList addVariables(const QStringList& variableNames, QString filename = "", bool errorIfFileMismatch = true);
+	bool addVariable(QString variableName, QString filename = "");
+	QStringList addVariables(const QStringList& variableNames, QString filename = "");
 	bool removeVariable(QString variableName);
 	QStringList removeVariables(const QStringList& variableNames);
 	QStringList updateVariables(); 
