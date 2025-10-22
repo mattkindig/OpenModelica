@@ -58,7 +58,6 @@
 #include <iostream>
 #include <algorithm>   // std::sort
 
-#include <fstream>
 
 using namespace OMPlot;
 
