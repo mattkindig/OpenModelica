@@ -37,7 +37,6 @@
 #include <QDir>
 #include <QSet>
 
-#include <fstream>
 
 namespace OMPlot {
 
@@ -460,28 +459,15 @@ QStringList TableModel::updateVariableDataFromFile(QString filename, const QStri
 
 bool TableModel::addVariable(QString variableName, QString filename, bool errorIfFileMismatch)
 {
-    /*
-    beginResetModel();
-    QStringList variables = mVariableList << variableName;
-    variables = setVariables
-
-
-    if (variables.isEmpty()) {
-        // error condition
-        return false;
-    }
-    mVariableList = variables;
-    getTable()->update();
-    endResetModel();
-    return variables.contains(variableName);  // true if data exists for this variable, false otherwise
-    */
-    QStringList variables = mVariableList << variableName;
-    variables = setVariables(variables, filename);
-    return variables.contains(variableName);
+    QStringList allVariables(mVariableList);
+    allVariables.append(variableName);
+    allVariables = setVariables(allVariables, filename);
+    return allVariables.contains(variableName);
 }
 
 QStringList TableModel::addVariables(const QStringList& variableNames, QString filename, bool errorIfFileMismatch) {
-    QStringList allVariables = mVariableList << variableNames;
+    QStringList allVariables(mVariableList);
+    allVariables.append(variableNames);
     allVariables = setVariables(allVariables, filename);
     return StringListFilter(variableNames, allVariables);
 }
@@ -492,7 +478,7 @@ bool TableModel::removeVariable(QString variableName)
     int index = variableList.indexOf(variableName);
     if (index >= 0) {
         variableList.removeAt(index);
-        emit updateModel(getAbsoluteFilePath(), variableList, mTimeVariable, mVariableData);
+        emit updateModel(getAbsoluteFilePath(), variableList, getTimeVariable(), mVariableData);
         return true;
     }
     return false;
@@ -509,7 +495,7 @@ QStringList TableModel::removeVariables(const QStringList& variableNames)
             removedVariables.append(variableName);
         }
     }
-    emit updateModel(getAbsoluteFilePath(), variableList, mTimeVariable, mVariableData);
+    emit updateModel(getAbsoluteFilePath(), variableList, getTimeVariable(), mVariableData);
     return removedVariables;
 }
 
@@ -523,9 +509,9 @@ void TableModel::updateModelSlot(QString filename, const QStringList& variables,
         mFile = QFileInfo(filename);
         mFileLastModified = mFile.lastModified();
     }
-    mTimeVariable = timeVariable;
+    setTimeVariable(timeVariable);
     mVariableData = data;
-    mTimeData = data.value(timeVariable);
+    mTimeData = data.value(mTimeVariable);
     mVariableList = variables;
     endResetModel();
 }
@@ -538,7 +524,9 @@ void TableModel::clearModel()
 
 void TableModel::setTimeVariable(QString timeVariable)
 {
-	mTimeVariable = timeVariable;
+    if (!timeVariable.isEmpty()) {
+        mTimeVariable = timeVariable;
+    }
 }
 
 double TableModel::getVariableValue(QString variableName, int timeIndex, bool& valid) const 
@@ -549,7 +537,7 @@ double TableModel::getVariableValue(QString variableName, int timeIndex, bool& v
     } else {
         varData = mVariableData.value(variableName, QVector<double>());
     }
-    qsizetype n = varData.size();      // n==0 if data for variable not found
+    int n = varData.size();      // n==0 if data for variable not found
     if ( (n == 0) || (timeIndex < 0)) {     
         valid = false;
         return 0.0;
