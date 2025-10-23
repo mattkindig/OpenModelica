@@ -40,6 +40,7 @@
 
 namespace OMPlot {
 
+// empty table size (when no output file has been specified)
 static const int defaultTimeCount = 100, defaultVariableCount = 6;
 
 static QStringList StringListFilter(const QStringList& listA, const QStringList& listB) {
@@ -198,7 +199,7 @@ QStringList TableModel::updateVariableDataFromFile(QString filename, const QStri
     }
     if (variablesRemaining.isEmpty()) 
     {
-        // no variables to extract from file, so just jump to end of function
+        // no variables to extract from file (all variables in cached data), so just jump to end of function
     }
     //PLT file
     else if (filename.endsWith("plt"))
