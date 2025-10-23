@@ -197,7 +197,14 @@ QStringList TableModel::updateVariableDataFromFile(QString filename, const QStri
             variablesRemaining.insert(variableName);
         }
     }
-    if (variablesRemaining.isEmpty()) 
+    bool retrieveAllVariables = false;
+    // special case-- variableList[0] contains '--all', then retrieve all variables present in file, regardless of whether they appear in the variable list
+    if ( (variableList.size() > 0) && (variableList[0].compare("--all") == 0)) {
+        retrieveAllVariables = true;
+        variablesDefined.clear();
+        variablesRemaining.clear();
+    }
+    if (variablesRemaining.isEmpty() && (!retrieveAllVariables))
     {
         // no variables to extract from file (all variables in cached data), so just jump to end of function
     }
@@ -230,8 +237,7 @@ QStringList TableModel::updateVariableDataFromFile(QString filename, const QStri
             if (currentLine.contains("DataSet:"))
             {
                 QString currentVariable = currentLine.remove("DataSet: ").trimmed();
-                QSet<QString>::iterator it = variablesRemaining.find(currentVariable);
-                if (it != variablesRemaining.end())
+                if (retrieveAllVariables || variablesRemaining.contains(currentVariable))
                 {
                     // read the variable values now
                     QVector<double> ydata;
@@ -247,14 +253,14 @@ QStringList TableModel::updateVariableDataFromFile(QString filename, const QStri
                     }
                     variableData.insert(currentVariable, ydata);
                     variablesDefined.insert(currentVariable);
-                    variablesRemaining.erase(it);
+                    variablesRemaining.remove(currentVariable);
                     assignTime = false;
                 }
                 else if (currentVariable.compare("time", Qt::CaseInsensitive) == 0) {
                     timeVariable = currentVariable;
                 }
                 // if no additional variables to read, no need to read further
-                if (variablesRemaining.isEmpty()) {
+                if (variablesRemaining.isEmpty() && (! retrieveAllVariables)) {
                     break;
                 }
             }
@@ -291,8 +297,7 @@ QStringList TableModel::updateVariableDataFromFile(QString filename, const QStri
         {
             char *variable = csvReader->variables[i];
             QString Variable(variable);
-            QSet<QString>::iterator it = variablesRemaining.find(Variable);
-            if (it != variablesRemaining.end())
+            if (retrieveAllVariables || variablesRemaining.contains(Variable))
             {
                 double* vals = read_csv_dataset(csvReader, variable);
                 if (vals == NULL)
@@ -303,7 +308,7 @@ QStringList TableModel::updateVariableDataFromFile(QString filename, const QStri
                 QVector<double> ydata(vals, vals + csvReader->numsteps);
                 variableData.insert(Variable, ydata);
                 variablesDefined.insert(Variable);
-                variablesRemaining.erase(it);
+                variablesRemaining.remove(Variable);
             }
         }
         // close the file
@@ -337,8 +342,7 @@ QStringList TableModel::updateVariableDataFromFile(QString filename, const QStri
         for (uint32_t i = 0; i < reader.nall; i++) {
             char* variable = reader.allInfo[i].name;
             QString Variable(variable);
-            QSet<QString>::iterator it = variablesRemaining.find(Variable);
-            if (it != variablesRemaining.end()) 
+            if (retrieveAllVariables || variablesRemaining.contains(Variable))
             {
                 // read the variable values
                 var = omc_matlab4_find_var(&reader, variable);
@@ -365,11 +369,16 @@ QStringList TableModel::updateVariableDataFromFile(QString filename, const QStri
                 }
                 variableData.insert(Variable, ydata);
                 variablesDefined.insert(Variable);
-                variablesRemaining.erase(it);
+                variablesRemaining.remove(Variable);
             }
         }
         // close the file
         omc_free_matlab4_reader(&reader);
+    }
+    if (retrieveAllVariables) {
+        QStringList extractedVariables(variablesDefined.begin(), variablesDefined.end());
+        std::sort(extractedVariables.begin(), extractedVariables.end());
+        return extractedVariables;
     }
     // if some variables of the specified variables were not found, throw error
     if (!variablesRemaining.isEmpty()) {

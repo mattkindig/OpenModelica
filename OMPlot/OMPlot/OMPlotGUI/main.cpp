@@ -135,6 +135,9 @@ int main(int argc, char *argv[])
       plottype = "plotParametric";
     } else if (strcmp(argv[i], "--table") == 0) {
       plottype = "table";
+    } else if (strcmp(argv[i], "--tableAll") == 0) {
+      plottype = "table";
+      vars.append("--all");
     } else if (strncmp(argv[i], "--xlabel=", 9) == 0) {
       xlabel = argv[i]+9;
     } else if (strncmp(argv[i], "--ylabel=",9) == 0) {
