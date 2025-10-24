@@ -189,20 +189,22 @@ QStringList TableModel::updateVariableDataFromFile(QString filename, const QStri
     if (filename.isEmpty() || variableList.isEmpty()) {
         return QStringList(); 
     }
+    bool retrieveAllVariables = false;
     QSet<QString> variablesDefined, variablesRemaining;
     foreach(QString variableName, variableList) {
+        if (variableName.compare("--all") == 0) {
+            // special case: if variableList contains '--all', then retrieve all variables present in file, 
+            // regardless of whether they appear in the variable list
+            retrieveAllVariables = true;
+            variablesDefined.clear();
+            variablesRemaining.clear();
+            break;
+        }
         if (variableData.contains(variableName)) {
             variablesDefined.insert(variableName);
         } else {
             variablesRemaining.insert(variableName);
         }
-    }
-    bool retrieveAllVariables = false;
-    // special case-- variableList[0] contains '--all', then retrieve all variables present in file, regardless of whether they appear in the variable list
-    if ( (variableList.size() > 0) && (variableList[0].compare("--all") == 0)) {
-        retrieveAllVariables = true;
-        variablesDefined.clear();
-        variablesRemaining.clear();
     }
     if (variablesRemaining.isEmpty() && (!retrieveAllVariables))
     {
@@ -227,7 +229,7 @@ QStringList TableModel::updateVariableDataFromFile(QString filename, const QStri
                 break;
             }
         }
-        timeVariable = "time";
+        timeVariable = "";
         QVector<double> timeData;
         bool assignTime = true;
         // Read variable values from file
@@ -239,13 +241,14 @@ QStringList TableModel::updateVariableDataFromFile(QString filename, const QStri
                 QString currentVariable = currentLine.remove("DataSet: ").trimmed();
                 if (retrieveAllVariables || variablesRemaining.contains(currentVariable))
                 {
-                    // read the variable values now
+                    // read the variable values
                     QVector<double> ydata;
                     currentLine = textStream.readLine();
                     for (int j = 0; j < intervalSize; j++)
                     {
                         QStringList values = currentLine.split(",");
-                        if (assignTime) {
+                        if (assignTime) {   
+                            // Every variable has time column included. Just get retrieve it for first variable specified in file
                             timeData.append(QString(values[0]).toDouble());
                         }
                         ydata.append(QString(values[1]).toDouble());
@@ -260,10 +263,13 @@ QStringList TableModel::updateVariableDataFromFile(QString filename, const QStri
                     timeVariable = currentVariable;
                 }
                 // if no additional variables to read, no need to read further
-                if (variablesRemaining.isEmpty() && (! retrieveAllVariables)) {
+                if (variablesRemaining.isEmpty() && (! timeVariable.isEmpty()) && (!retrieveAllVariables)) {
                     break;
                 }
             }
+        }
+        if (timeVariable.isEmpty()) {
+            timeVariable = "time";   // default variable name for time if not found in file
         }
         variableData.insert(timeVariable, timeData);
         fileReader.close();
@@ -377,7 +383,7 @@ QStringList TableModel::updateVariableDataFromFile(QString filename, const QStri
     }
     if (retrieveAllVariables) {
         QStringList extractedVariables(variablesDefined.begin(), variablesDefined.end());
-        std::sort(extractedVariables.begin(), extractedVariables.end());
+        std::sort(extractedVariables.begin(), extractedVariables.end());  // put in alphabetical order
         return extractedVariables;
     }
     // if some variables of the specified variables were not found, throw error
