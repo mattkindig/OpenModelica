@@ -497,6 +497,42 @@ double TableModel::getVariableValue(QString variableName, int timeIndex, bool& v
     }
 }
 
+void TableModel::setUnit(QString variableName, QString unit) {
+    TableUnit unitData(unit);   // changing unit resets conversion factors to defaults
+    mUnitMap.insert(variableName, unit);
+}
+
+QString TableModel::getUnit(QString variableName) const {
+    TableUnit unitData = mUnitMap.value(variableName, TableUnit());
+    return unitData.unit;
+}
+
+void TableModel::setDisplayUnit(QString variableName, QString unit) {
+    TableUnit unitData = mUnitMap.value(variableName, TableUnit());
+    unitData.displayUnit = unit;
+    mUnitMap.insert(variableName, unitData);
+}
+
+QString TableModel::getDisplayUnit(QString variableName) const {
+    TableUnit unitData = mUnitMap.value(variableName, TableUnit());
+    return unitData.displayUnit;
+}
+
+void TableModel::setUnitScale(QString variableName, double scale, double offset) {
+    TableUnit unitData = mUnitMap.value(variableName, TableUnit());
+    unitData.scale = scale;
+    unitData.offset = offset;
+    mUnitMap.insert(variableName, unitData);
+}
+
+QString TableModel::getUnitScale(QString variableName, double& scale, double& offset) const {
+    TableUnit unitData = mUnitMap.value(variableName, TableUnit());
+    scale = unitData.scale;
+    offset = unitData.offset;
+    return unitData.displayUnit;
+}
+
+
 int TableModel::rowCount(const QModelIndex &parent) const 
 {
     if (isDefined()) {

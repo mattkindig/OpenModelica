@@ -80,7 +80,8 @@ void printUsage(bool shortDescription)
     printf("    --plot                     Create a normal plot\n");
     printf("    --plotAll                  Create a normal plot containing every variable in the result-file\n");
     printf("    --plotParametric           Create a parametric plot (plot variables as functions of each other)\n");
-    printf("    --table                    Create an output table\n");
+    printf("    --table                    Create an output table containing specified variables\n");
+    printf("    --tableAll                 Create an output table containing every variable in the result-file\n");
     printf("    --title=TITLE              Sets the TITLE of the plot window\n");
     printf("    --xlabel=LABEL             Use LABEL as the label of the x-axis\n");
     printf("    --xrange=LEFT:RIGHT        Sets the initial range of the x-axis to LEFT:RIGHT\n");

@@ -53,10 +53,11 @@ struct TableUnit {
 	double offset;
 	QString unit;
 	QString displayUnit;
-	TableUnit() {
-		scale = 1.0;
-		offset = 0.0;
-		unit = displayUnit = "";
+	TableUnit(QString unit = "", QString displayUnit = "", double scale = 1.0, double offset = 0.0) {
+		this->scale = scale;
+		this->offset = offset;
+		this->unit = unit;
+		this->displayUnit = displayUnit.isEmpty() ? this->unit : displayUnit;
 	}
 };
 
@@ -104,16 +105,16 @@ public:
 	QStringList updateVariables(); 
 
 	QString getTimeVariable() const { return mTimeVariable; }
-	void setTimeUnit(QString timeUnit) { mUnits.insert(mTimeVariable, timeUnit); }
-	QString getTimeUnit() { return mUnits.value(mTimeVariable, QString("")); }
-	QString getTimeDisplayUnit() { return mDisplayUnits.value(mTimeVariable, QString("")); }
+	void setTimeUnit(QString timeUnit) { setUnit(mTimeVariable, timeUnit); }
+	QString getTimeUnit() { return getUnit(mTimeVariable); }
+	QString getTimeDisplayUnit() { return getDisplayUnit(mTimeVariable); }
 
-	/*
 	void setUnit(QString variableName, QString unit);
 	QString getUnit(QString variableName) const;
 	void setDisplayUnit(QString variableName, QString unit);
 	QString getDisplayUnit(QString variableName) const;
-	*/
+	void setUnitScale(QString variableName, double scale, double offset);
+	QString getUnitScale(QString variableName, double& scale, double& offset) const;
 
 //	QStringList updateVariableData(QString filename = "", const QStringList &variables = QStringList(), bool errorIfFileMismatch = false);
 	void setTimeVariable(QString timeVariable);
@@ -143,7 +144,6 @@ private:
 	QVector<double> mTimeData;
 	QStringList mVariableList;
 	VarData mVariableData;
-	QHash<QString, QString> mUnits, mDisplayUnits;
 	OutputTable* mpTable;      
 	QHash<QString, TableUnit> mUnitMap;
 	bool mTimeAcrossColumns;
