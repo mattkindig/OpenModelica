@@ -104,6 +104,7 @@ public:
 	QStringList removeVariables(const QStringList& variableNames);
 	QStringList updateVariables(); 
 
+	void setTimeVariable(QString timeVariable);
 	QString getTimeVariable() const { return mTimeVariable; }
 	void setTimeUnit(QString timeUnit) { setUnit(mTimeVariable, timeUnit); }
 	QString getTimeUnit() { return getUnit(mTimeVariable); }
@@ -117,8 +118,7 @@ public:
 	QString getUnitScale(QString variableName, double& scale, double& offset) const;
 
 //	QStringList updateVariableData(QString filename = "", const QStringList &variables = QStringList(), bool errorIfFileMismatch = false);
-	void setTimeVariable(QString timeVariable);
-
+	
 	QVector<double> getTimes() const { return mTimeData;  }
 	QStringList getVariables() const { return mVariableList; }
 //	QStringList getVariableLabels() const;
