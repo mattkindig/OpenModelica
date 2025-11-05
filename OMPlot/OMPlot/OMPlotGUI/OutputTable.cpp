@@ -43,6 +43,7 @@ namespace OMPlot {
 // empty table size (when no output file has been specified)
 static const int defaultTimeCount = 100, defaultVariableCount = 6;
 
+/* Return QStringList containing all elements of listA that are also found in listB, in listA order. */
 static QStringList StringListFilter(const QStringList& listA, const QStringList& listB) {
     QStringList out;
     foreach(QString str, listA) {
@@ -190,7 +191,8 @@ QStringList TableModel::updateVariableDataFromFile(QString filename, const QStri
         return QStringList(); 
     }
     bool retrieveAllVariables = false;
-    QSet<QString> variablesDefined, variablesRemaining;
+    QSet<QString> variablesRemaining;
+    QStringList variablesDefined;
     foreach(QString variableName, variableList) {
         if (variableName.compare("--all") == 0) {
             // special case: if variableList contains '--all', then retrieve all variables present in file, 
@@ -201,7 +203,7 @@ QStringList TableModel::updateVariableDataFromFile(QString filename, const QStri
             break;
         }
         if (variableData.contains(variableName)) {
-            variablesDefined.insert(variableName);
+            variablesDefined.append(variableName);
         } else {
             variablesRemaining.insert(variableName);
         }
@@ -255,7 +257,7 @@ QStringList TableModel::updateVariableDataFromFile(QString filename, const QStri
                         currentLine = textStream.readLine();
                     }
                     variableData.insert(currentVariable, ydata);
-                    variablesDefined.insert(currentVariable);
+                    variablesDefined.append(currentVariable);
                     variablesRemaining.remove(currentVariable);
                     assignTime = false;
                 }
@@ -313,7 +315,7 @@ QStringList TableModel::updateVariableDataFromFile(QString filename, const QStri
                 }
                 QVector<double> ydata(vals, vals + csvReader->numsteps);
                 variableData.insert(Variable, ydata);
-                variablesDefined.insert(Variable);
+                variablesDefined.append(Variable);
                 variablesRemaining.remove(Variable);
             }
         }
@@ -374,7 +376,7 @@ QStringList TableModel::updateVariableDataFromFile(QString filename, const QStri
                     ydata.append(val);
                 }
                 variableData.insert(Variable, ydata);
-                variablesDefined.insert(Variable);
+                variablesDefined.append(Variable);
                 variablesRemaining.remove(Variable);
             }
         }
@@ -382,9 +384,7 @@ QStringList TableModel::updateVariableDataFromFile(QString filename, const QStri
         omc_free_matlab4_reader(&reader);
     }
     if (retrieveAllVariables) {
-        QStringList extractedVariables(variablesDefined.begin(), variablesDefined.end());
-        std::sort(extractedVariables.begin(), extractedVariables.end());  // put in alphabetical order
-        return extractedVariables;
+        return variablesDefined; 
     }
     // if some variables of the specified variables were not found, throw error
     if (!variablesRemaining.isEmpty()) {
@@ -392,13 +392,7 @@ QStringList TableModel::updateVariableDataFromFile(QString filename, const QStri
         throw NoVariableException(QString("Variables not found: ").append(missingVariables.join(",")).toStdString().c_str());
     }
     // return variables in originally passed-in order, removing variables that were not found
-    QStringList extractedVariables;
-    foreach(QString variableName, variableList) {
-        if (variablesDefined.contains(variableName)) {
-            extractedVariables.append(variableName);
-        }
-    }
-    return extractedVariables;
+    return StringListFilter(variableList, variablesDefined);
 }
 
 bool TableModel::addVariable(QString variableName, QString filename)

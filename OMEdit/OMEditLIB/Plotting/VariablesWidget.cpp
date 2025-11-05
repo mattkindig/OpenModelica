@@ -1979,7 +1979,8 @@ void VariablesWidget::plotVariables(const QModelIndex &index, qreal curveThickne
         pVariablesTreeItem->setChecked(checkState);
       }
     }
-    PlotWindow* pPlotWindow =   pResultWindow && pResultWindow->isPlotWindow()  ? qobject_cast<PlotWindow*>(pResultWindow) : nullptr;  // At most one of pPlotWindow or pTableWindow can be non-null
+    // At most one of pPlotWindow or pTableWindow can be non-null
+    PlotWindow* pPlotWindow =   pResultWindow && pResultWindow->isPlotWindow()  ? qobject_cast<PlotWindow*>(pResultWindow) : nullptr;  
     TableWindow* pTableWindow = pResultWindow && pResultWindow->isTableWindow() ? qobject_cast<TableWindow*>(pResultWindow) : nullptr;
     QString filename = QString("%1/%2").arg(pVariablesTreeItem->getFilePath()).arg(pVariablesTreeItem->getFileName());
     QStringList checkedVariables, processedVariables;
